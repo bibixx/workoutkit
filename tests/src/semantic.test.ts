@@ -3,7 +3,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-import { encodeWorkoutPlan } from "workout-file-sdk";
+import { encode } from "@bibixx/workoutkit/encode";
 import { loadSpec } from "./spec.ts";
 import { swiftParse } from "./swift-parse.ts";
 import { normalize } from "./normalize.ts";
@@ -22,7 +22,7 @@ describe("semantic round-trip: TS SDK bytes → Apple parser → spec JSON", () 
       const plan = loadSpec(specPath);
 
       // TS SDK encodes → Apple's WorkoutPlan(from:) parses → spec JSON
-      const bytes = encodeWorkoutPlan(plan);
+      const bytes = encode(plan);
       const parsed = swiftParse(bytes);
 
       // Strict equality: every field Apple surfaces must be accounted for

@@ -9,7 +9,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-import { encodeWorkoutPlan } from "workout-file-sdk";
+import { encode } from "@bibixx/workoutkit/encode";
 import { loadSpec } from "./spec.ts";
 import { byteMismatchReport } from "./debug.ts";
 
@@ -20,7 +20,7 @@ const snapshotDir = resolve(here, "../snapshots");
 describe("determinism canary", () => {
   it("custom-pool-swim.spec.json → stable bytes", () => {
     const spec = loadSpec(join(fixtureDir, "custom-pool-swim.spec.json"));
-    const actual = encodeWorkoutPlan(spec);
+    const actual = encode(spec);
     const expected = new Uint8Array(
       readFileSync(join(snapshotDir, "custom-pool-swim.workout")),
     );

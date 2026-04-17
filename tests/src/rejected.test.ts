@@ -14,7 +14,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-import { encodeWorkoutPlan } from "workout-file-sdk";
+import { encode } from "@bibixx/workoutkit/encode";
 import { swiftParse } from "./swift-parse.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -38,7 +38,7 @@ describe("Apple parser rejects known-invalid fixtures", () => {
 
       // The SDK should encode without objection — our encoder is a dumb
       // serializer, not a validator.
-      const bytes = encodeWorkoutPlan(spec as Parameters<typeof encodeWorkoutPlan>[0]);
+      const bytes = encode(spec as Parameters<typeof encode>[0]);
       expect(bytes.length).toBeGreaterThan(0);
 
       // Apple's parser must refuse the bytes. We capture the thrown error

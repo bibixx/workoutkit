@@ -6,7 +6,7 @@
 // then uppercase the UUID (Apple always emits uppercase; user-authored
 // spec files sometimes use lowercase).
 
-import type { WorkoutPlan } from "workout-file-sdk";
+import type { WorkoutPlanJson } from "@bibixx/workoutkit";
 
 type Obj = Record<string, unknown>;
 
@@ -31,7 +31,7 @@ function walk(node: unknown): unknown {
   return node;
 }
 
-export function normalize(spec: WorkoutPlan | unknown): unknown {
+export function normalize(spec: WorkoutPlanJson | unknown): unknown {
   const copy = JSON.parse(JSON.stringify(spec)) as Obj;
   if (typeof copy.referenceId === "string") {
     copy.referenceId = (copy.referenceId as string).toUpperCase();

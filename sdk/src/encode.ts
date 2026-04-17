@@ -4,19 +4,19 @@
 import { Writer } from "./wire.ts";
 import {
   ActivityType,
-  type CustomWorkout,
-  type Goal,
-  type IntervalBlock,
-  type IntervalStep,
+  type CustomWorkoutJson,
+  type GoalJson,
+  type IntervalBlockJson,
+  type IntervalStepJson,
   type Location,
-  type PacerWorkout,
+  type PacerWorkoutJson,
   type Purpose,
-  type SbrActivity,
-  type SingleGoalWorkout,
-  type Step,
-  type SwimBikeRunWorkout,
+  type SbrActivityJson,
+  type SingleGoalWorkoutJson,
+  type StepJson,
+  type SwimBikeRunWorkoutJson,
   type SwimmingLocation,
-  type WorkoutPlan,
+  type WorkoutPlanJson,
 } from "./schema.ts";
 
 // WorkoutPlan composition field numbers (one of these carries the workout).
@@ -43,7 +43,7 @@ const SWIM_LOCATION_PROTO: Record<SwimmingLocation, number> = {
 
 const PURPOSE_PROTO: Record<Purpose, number> = { work: 1, recovery: 2 };
 
-const GOAL_TYPE_PROTO: Record<Goal["type"], number> = {
+const GOAL_TYPE_PROTO: Record<GoalJson["type"], number> = {
   open: 4,
   time: 1,
   energy: 2,
@@ -68,7 +68,7 @@ const ENERGY_UNIT_PROTO = {
   kilojoules: 2,
 } as const;
 
-const GOAL_VALUE_FIELD: Record<Exclude<Goal["type"], "open">, number> = {
+const GOAL_VALUE_FIELD: Record<Exclude<GoalJson["type"], "open">, number> = {
   time: 2,
   energy: 3,
   distance: 4,
@@ -100,7 +100,7 @@ function writeEnergyQuantity(
   writeQuantity(w, ENERGY_UNIT_PROTO[q.unit], q.value);
 }
 
-function writeGoal(w: Writer, g: Goal): void {
+function writeGoal(w: Writer, g: GoalJson): void {
   w.uint32Required(1, GOAL_TYPE_PROTO[g.type]);
   switch (g.type) {
     case "open":
@@ -124,25 +124,25 @@ function writeGoal(w: Writer, g: Goal): void {
   }
 }
 
-function writeStep(w: Writer, s: Step): void {
+function writeStep(w: Writer, s: StepJson): void {
   w.message(1, (sub) => writeGoal(sub, s.goal));
   // field 2 = alert (not supported yet)
   w.string(3, s.displayName);
 }
 
-function writeIntervalStep(w: Writer, is: IntervalStep): void {
+function writeIntervalStep(w: Writer, is: IntervalStepJson): void {
   w.uint32Required(1, PURPOSE_PROTO[is.purpose]);
   w.message(2, (sub) => writeStep(sub, is.step));
 }
 
-function writeBlock(w: Writer, b: IntervalBlock): void {
+function writeBlock(w: Writer, b: IntervalBlockJson): void {
   for (const step of b.steps) {
     w.message(1, (sub) => writeIntervalStep(sub, step));
   }
   w.uint32(2, b.iterations);
 }
 
-function writeCustomWorkout(w: Writer, c: CustomWorkout): void {
+function writeCustomWorkout(w: Writer, c: CustomWorkoutJson): void {
   w.uint32(1, ActivityType[c.activity]);
   w.uint32(2, LOCATION_PROTO[c.location]);
   w.string(3, c.displayName);
@@ -151,21 +151,21 @@ function writeCustomWorkout(w: Writer, c: CustomWorkout): void {
   if (c.cooldown) w.message(6, (sub) => writeStep(sub, c.cooldown!));
 }
 
-function writeSingleGoalWorkout(w: Writer, g: SingleGoalWorkout): void {
+function writeSingleGoalWorkout(w: Writer, g: SingleGoalWorkoutJson): void {
   w.uint32(1, ActivityType[g.activity]);
   w.uint32(2, LOCATION_PROTO[g.location]);
   w.uint32(3, SWIM_LOCATION_PROTO[g.swimmingLocation ?? "unknown"]);
   w.message(4, (sub) => writeGoal(sub, g.goal));
 }
 
-function writePacerWorkout(w: Writer, p: PacerWorkout): void {
+function writePacerWorkout(w: Writer, p: PacerWorkoutJson): void {
   w.uint32(1, ActivityType[p.activity]);
   w.uint32(2, LOCATION_PROTO[p.location]);
   w.message(3, (sub) => writeLengthQuantity(sub, p.distance));
   w.message(4, (sub) => writeDurationQuantity(sub, p.time));
 }
 
-function writeSbrActivity(w: Writer, a: SbrActivity): void {
+function writeSbrActivity(w: Writer, a: SbrActivityJson): void {
   switch (a.kind) {
     case "swimming":
       w.uint32(1, ActivityType.swimming);
@@ -186,14 +186,14 @@ function writeSbrActivity(w: Writer, a: SbrActivity): void {
   }
 }
 
-function writeSwimBikeRunWorkout(w: Writer, s: SwimBikeRunWorkout): void {
+function writeSwimBikeRunWorkout(w: Writer, s: SwimBikeRunWorkoutJson): void {
   for (const a of s.activities) {
     w.message(1, (sub) => writeSbrActivity(sub, a));
   }
   w.string(2, s.displayName);
 }
 
-export function encodeWorkoutPlan(plan: WorkoutPlan): Uint8Array {
+export function encodeWorkoutPlan(plan: WorkoutPlanJson): Uint8Array {
   const present = [plan.custom, plan.goal, plan.pacer, plan.swimBikeRun]
     .filter((v) => v !== undefined).length;
   if (present === 0) {

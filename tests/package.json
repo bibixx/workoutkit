@@ -6,7 +6,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "workout-file-sdk": "*"
+    "@bibixx/workoutkit": "*"
   },
   "devDependencies": {
     "vitest": "^2.1.0"

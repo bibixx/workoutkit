@@ -1,4 +1,7 @@
-// Public SDK types — WorkoutKit-shaped, not proto-shaped.
+// Public JSON-shape types — WorkoutKit-shaped, not proto-shaped.
+// These describe the wire-equivalent JSON that class instances serialize to
+// via `toJSON()` (and hydrate from via `fromJson()`). The mutable-class API
+// in `classes.ts` builds on top of these.
 
 // HKWorkoutActivityType raw values. Keep them explicit so the TS side reads
 // the same as WorkoutKit's Swift API.
@@ -97,7 +100,7 @@ export type EnergyUnit = "kilocalories" | "kilojoules";
 
 export type Quantity<U extends string> = { value: number; unit: U };
 
-export type Goal =
+export type GoalJson =
   | { type: "open" }
   | { type: "time"; time: Quantity<DurationUnit> }
   | { type: "distance"; distance: Quantity<LengthUnit> }
@@ -110,62 +113,62 @@ export type Goal =
       };
     };
 
-export type Step = {
+export type StepJson = {
   displayName?: string;
-  goal: Goal;
+  goal: GoalJson;
 };
 
 export type Purpose = "work" | "recovery";
 
-export type IntervalStep = {
+export type IntervalStepJson = {
   purpose: Purpose;
-  step: Step;
+  step: StepJson;
 };
 
-export type IntervalBlock = {
+export type IntervalBlockJson = {
   iterations: number;
-  steps: IntervalStep[];
+  steps: IntervalStepJson[];
 };
 
-export type CustomWorkout = {
+export type CustomWorkoutJson = {
   activity: ActivityName;
   location: Location;
   displayName?: string;
-  warmup?: Step;
-  blocks: IntervalBlock[];
-  cooldown?: Step;
+  warmup?: StepJson;
+  blocks: IntervalBlockJson[];
+  cooldown?: StepJson;
 };
 
-export type SingleGoalWorkout = {
+export type SingleGoalWorkoutJson = {
   activity: ActivityName;
   location: Location;
-  swimmingLocation?: SwimmingLocation;  // default "unknown"
-  goal: Goal;
+  swimmingLocation?: SwimmingLocation; // default "unknown"
+  goal: GoalJson;
 };
 
-export type PacerWorkout = {
+export type PacerWorkoutJson = {
   activity: ActivityName;
   location: Location;
   distance: Quantity<LengthUnit>;
   time: Quantity<DurationUnit>;
 };
 
-export type SbrActivity =
+export type SbrActivityJson =
   | { kind: "swimming"; swimmingLocation?: SwimmingLocation }
   | { kind: "cycling"; location?: Location }
   | { kind: "running"; location?: Location };
 
-export type SwimBikeRunWorkout = {
+export type SwimBikeRunWorkoutJson = {
   displayName?: string;
-  activities: SbrActivity[];
+  activities: SbrActivityJson[];
 };
 
 // Exactly one of custom/goal/pacer/swimBikeRun must be present. The
 // discriminated structure is enforced at the encoder level.
-export type WorkoutPlan = {
+export type WorkoutPlanJson = {
   referenceId: string;
-  custom?: CustomWorkout;
-  goal?: SingleGoalWorkout;
-  pacer?: PacerWorkout;
-  swimBikeRun?: SwimBikeRunWorkout;
+  custom?: CustomWorkoutJson;
+  goal?: SingleGoalWorkoutJson;
+  pacer?: PacerWorkoutJson;
+  swimBikeRun?: SwimBikeRunWorkoutJson;
 };

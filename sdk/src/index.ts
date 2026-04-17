@@ -1,2 +1,3 @@
 export * from "./schema.ts";
-export { encodeWorkoutPlan } from "./encode.ts";
+export * from "./quantities.ts";
+export * from "./classes.ts";
