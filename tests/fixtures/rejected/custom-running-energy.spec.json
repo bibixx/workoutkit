@@ -1,0 +1,23 @@
+{
+  "_why": "CustomWorkout(running, outdoor) doesn't allow .energy as a step goal — Apple raises unsupportedGoal at parse time.",
+  "_expectError": "unsupportedGoal",
+  "referenceId": "00000000-0000-4000-8000-000000009002",
+  "custom": {
+    "activity": "running",
+    "location": "outdoor",
+    "displayName": "Kilocal burn",
+    "blocks": [
+      {
+        "iterations": 3,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": { "type": "energy", "energy": { "value": 150, "unit": "kilocalories" } }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "_why": "SwimBikeRunWorkout enforces activity ordering (swim before bike before run). bike → run → swim is invalid.",
+  "_expectError": "repeatedActivities",
+  "referenceId": "00000000-0000-4000-8000-000000009003",
+  "swimBikeRun": {
+    "displayName": "Bike → Run → Swim",
+    "activities": [
+      { "kind": "cycling",  "location": "outdoor" },
+      { "kind": "running",  "location": "outdoor" },
+      { "kind": "swimming", "swimmingLocation": "openWater" }
+    ]
+  }
+}

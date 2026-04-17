@@ -1,0 +1,10 @@
+{
+  "_why": "SingleGoalWorkout doesn't allow rowing with .indoor location — Apple raises unsupportedActivityLocation at parse time.",
+  "_expectError": "unsupportedActivityLocation",
+  "referenceId": "00000000-0000-4000-8000-000000009001",
+  "goal": {
+    "activity": "rowing",
+    "location": "indoor",
+    "goal": { "type": "distance", "distance": { "value": 2000, "unit": "meters" } }
+  }
+}
