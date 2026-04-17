@@ -1,0 +1,8 @@
+tools/workoutkit-section-dumper/dump-section
+artifacts/*.bin
+artifacts/*.log
+node_modules/
+.build/
+.swiftpm/
+dist/
+.DS_Store

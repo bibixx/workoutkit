@@ -1,0 +1,24 @@
+{
+  "referenceId": "C4B5F701-DDDD-4BAF-9E2E-0F0F0F0F0F0F",
+  "custom": {
+    "activity": "cycling",
+    "location": "outdoor",
+    "displayName": "Open ride",
+    "warmup": { "goal": { "type": "open" } },
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "Freeride",
+              "goal": { "type": "open" }
+            }
+          }
+        ]
+      }
+    ],
+    "cooldown": { "goal": { "type": "time", "time": { "value": 5, "unit": "minutes" } } }
+  }
+}

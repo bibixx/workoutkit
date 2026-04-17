@@ -1,0 +1,21 @@
+{
+  "referenceId": "11111111-2222-3333-4444-555555555555",
+  "custom": {
+    "activity": "walking",
+    "location": "outdoor",
+    "displayName": "Sunday stroll",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": { "type": "distance", "distance": { "value": 2.5, "unit": "miles" } }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

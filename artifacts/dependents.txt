@@ -1,0 +1,21 @@
+/System/Library/Frameworks/WorkoutKit.framework/WorkoutKit [arm64e]:
+    -linked_dylibs:
+        attributes     load path
+                       /System/Library/Frameworks/Foundation.framework/Versions/C/Foundation
+                       /usr/lib/libobjc.A.dylib
+                       /usr/lib/libSystem.B.dylib
+                       /System/Library/Frameworks/HealthKit.framework/Versions/A/HealthKit
+                       /System/Library/Frameworks/_LocationEssentials.framework/Versions/A/_LocationEssentials
+                       /System/Library/PrivateFrameworks/FeatureFlags.framework/Versions/A/FeatureFlags
+                       /System/Library/PrivateFrameworks/InternalSwiftProtobuf.framework/Versions/A/InternalSwiftProtobuf
+                       /usr/lib/swift/libswiftCore.dylib
+        weak-link      /usr/lib/swift/libswiftCoreFoundation.dylib
+        weak-link      /usr/lib/swift/libswiftCoreLocation.dylib
+        weak-link      /usr/lib/swift/libswiftDispatch.dylib
+        weak-link      /usr/lib/swift/libswiftIOKit.dylib
+                       /usr/lib/swift/libswiftObjectiveC.dylib
+        weak-link      /usr/lib/swift/libswiftUniformTypeIdentifiers.dylib
+        weak-link      /usr/lib/swift/libswiftXPC.dylib
+        weak-link      /usr/lib/swift/libswift_Builtin_float.dylib
+                       /usr/lib/swift/libswift_Concurrency.dylib
+                       /usr/lib/swift/libswiftos.dylib

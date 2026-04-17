@@ -1,0 +1,12 @@
+# extracted: 2026-04-17T16:35:40Z
+# sw_vers:
+#   ProductName:		macOS
+#   ProductVersion:		26.3.1
+#   BuildVersion:		25D2128
+# xcode-select: /Applications/Xcode.app/Contents/Developer
+# framework uuid + platform:
+#       -platform:
+#           platform     minOS      sdk
+#    zippered(macOS/Catalyst)     26.3      26.3   
+#       -uuid:
+#           11392678-B033-3359-B1CA-267D02C619C7

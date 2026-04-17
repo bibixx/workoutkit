@@ -1,0 +1,14 @@
+{
+  "name": "workout-file-sdk-root",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "sdk",
+    "tests"
+  ],
+  "scripts": {
+    "build:corpus": "swift build --package-path corpus -c release",
+    "extract": "scripts/extract-workoutkit.sh",
+    "test": "npm -w tests run test"
+  }
+}

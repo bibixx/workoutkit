@@ -1,0 +1,14 @@
+{
+  "name": "workout-file-sdk-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "workout-file-sdk": "*"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.0"
+  }
+}
