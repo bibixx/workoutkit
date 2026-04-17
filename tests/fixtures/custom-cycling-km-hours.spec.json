@@ -1,0 +1,36 @@
+{
+  "referenceId": "00000000-0000-4000-8000-000000000005",
+  "custom": {
+    "activity": "cycling",
+    "location": "outdoor",
+    "displayName": "Long ride",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": {
+                "type": "distance",
+                "distance": {
+                  "value": 50,
+                  "unit": "kilometers"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "cooldown": {
+      "goal": {
+        "type": "time",
+        "time": {
+          "value": 1,
+          "unit": "hours"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "referenceId": "00000000-0000-4000-8000-000000000064",
+  "goal": {
+    "activity": "running",
+    "location": "outdoor",
+    "goal": {
+      "type": "distance",
+      "distance": {
+        "value": 5,
+        "unit": "kilometers"
+      }
+    }
+  }
+}

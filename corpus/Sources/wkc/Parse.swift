@@ -4,11 +4,11 @@ import WorkoutKit
 
 // Parse .workout bytes via WorkoutKit's own API and serialise the resulting
 // `WorkoutPlan` back into the same JSON shape consumed by `encode`.
-// This is the oracle for the TS SDK's semantic tests.
 
 enum ParseError: Error, CustomStringConvertible {
     case unsupportedActivity(HKWorkoutActivityType)
     case unsupportedLocation(HKWorkoutSessionLocationType)
+    case unsupportedSwimmingLocation(HKWorkoutSwimmingLocationType)
     case unsupportedLengthUnit(String)
     case unsupportedDurationUnit(String)
     case unsupportedEnergyUnit(String)
@@ -20,6 +20,7 @@ enum ParseError: Error, CustomStringConvertible {
         switch self {
         case .unsupportedActivity(let a):        return "unsupported activity: \(a.rawValue)"
         case .unsupportedLocation(let l):        return "unsupported location: \(l.rawValue)"
+        case .unsupportedSwimmingLocation(let l): return "unsupported swimmingLocation: \(l.rawValue)"
         case .unsupportedLengthUnit(let s):      return "unsupported length unit: \(s)"
         case .unsupportedDurationUnit(let s):    return "unsupported duration unit: \(s)"
         case .unsupportedEnergyUnit(let s):      return "unsupported energy unit: \(s)"
@@ -32,19 +33,13 @@ enum ParseError: Error, CustomStringConvertible {
 
 // MARK: - Reverse enum tables
 
-private let activityNameByRaw: [UInt: String] = [
-    UInt(HKWorkoutActivityType.running.rawValue):                       "running",
-    UInt(HKWorkoutActivityType.cycling.rawValue):                       "cycling",
-    UInt(HKWorkoutActivityType.swimming.rawValue):                      "swimming",
-    UInt(HKWorkoutActivityType.walking.rawValue):                       "walking",
-    UInt(HKWorkoutActivityType.hiking.rawValue):                        "hiking",
-    UInt(HKWorkoutActivityType.rowing.rawValue):                        "rowing",
-    UInt(HKWorkoutActivityType.functionalStrengthTraining.rawValue):    "functionalStrength",
-    UInt(HKWorkoutActivityType.traditionalStrengthTraining.rawValue):   "traditionalStrength",
-    UInt(HKWorkoutActivityType.coreTraining.rawValue):                  "coreTraining",
-    UInt(HKWorkoutActivityType.yoga.rawValue):                          "yoga",
-    UInt(HKWorkoutActivityType.highIntensityIntervalTraining.rawValue): "highIntensityIntervalTraining",
-]
+private let activityNameByRaw: [UInt: String] = {
+    var out: [UInt: String] = [:]
+    for (name, type) in activityByName {
+        out[UInt(type.rawValue)] = name
+    }
+    return out
+}()
 
 private func activityName(_ a: HKWorkoutActivityType) throws -> String {
     if let n = activityNameByRaw[UInt(a.rawValue)] { return n }
@@ -56,8 +51,16 @@ private func locationName(_ l: HKWorkoutSessionLocationType) throws -> String {
     case .unknown: return "unknown"
     case .indoor:  return "indoor"
     case .outdoor: return "outdoor"
-    @unknown default:
-        throw ParseError.unsupportedLocation(l)
+    @unknown default: throw ParseError.unsupportedLocation(l)
+    }
+}
+
+private func swimmingLocationName(_ l: HKWorkoutSwimmingLocationType) throws -> String {
+    switch l {
+    case .unknown:   return "unknown"
+    case .pool:      return "pool"
+    case .openWater: return "openWater"
+    @unknown default: throw ParseError.unsupportedSwimmingLocation(l)
     }
 }
 
@@ -68,8 +71,6 @@ private func purposeName(_ p: IntervalStep.Purpose) -> String {
     @unknown default: return "unknown"
     }
 }
-
-// MARK: - Units (Foundation Measurements → spec strings)
 
 private let lengthUnitName: [UnitLength: String] = [
     .meters: "meters", .kilometers: "kilometers",
@@ -97,15 +98,25 @@ private func name(energy u: UnitEnergy) throws -> String {
 
 // MARK: - Output shape (mirrors Spec.swift Decodable side)
 
-// Emits JSON *keys in the exact order and shape* of the input spec JSON so
-// deep-equal comparisons in the test harness don't have to reason about
-// field ordering. We write each message with a custom encoder that picks
-// the correct key for the polymorphic variant.
-
 struct OutSpec: Encodable {
     let referenceId: String
     let custom: OutCustomWorkout?
-    let unsupported: String?
+    let goal: OutSingleGoalWorkout?
+    let pacer: OutPacerWorkout?
+    let swimBikeRun: OutSwimBikeRunWorkout?
+
+    enum Key: String, CodingKey {
+        case referenceId, custom, goal, pacer, swimBikeRun
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: Key.self)
+        try c.encode(referenceId, forKey: .referenceId)
+        try c.encodeIfPresent(custom, forKey: .custom)
+        try c.encodeIfPresent(goal, forKey: .goal)
+        try c.encodeIfPresent(pacer, forKey: .pacer)
+        try c.encodeIfPresent(swimBikeRun, forKey: .swimBikeRun)
+    }
 }
 
 struct OutCustomWorkout: Encodable {
@@ -115,6 +126,31 @@ struct OutCustomWorkout: Encodable {
     let warmup: OutStep?
     let blocks: [OutBlock]
     let cooldown: OutStep?
+}
+
+struct OutSingleGoalWorkout: Encodable {
+    let activity: String
+    let location: String
+    let swimmingLocation: String?
+    let goal: OutGoal
+}
+
+struct OutPacerWorkout: Encodable {
+    let activity: String
+    let location: String
+    let distance: OutQuantity
+    let time: OutQuantity
+}
+
+struct OutSwimBikeRunWorkout: Encodable {
+    let displayName: String?
+    let activities: [OutSbrActivity]
+}
+
+struct OutSbrActivity: Encodable {
+    let kind: String
+    let location: String?
+    let swimmingLocation: String?
 }
 
 struct OutBlock: Encodable {
@@ -136,7 +172,6 @@ struct OutQuantity: Encodable { let value: Double; let unit: String }
 
 struct OutGoal: Encodable {
     let type: String
-    // Exactly one of these is populated, chosen by `type`.
     let time: OutQuantity?
     let distance: OutQuantity?
     let energy: OutQuantity?
@@ -159,7 +194,7 @@ struct OutGoal: Encodable {
         case "poolSwimDistanceWithTime":
             try c.encodeIfPresent(poolSwimDistanceWithTime, forKey: .poolSwimDistanceWithTime)
         default:
-            break // "open" has no value field
+            break
         }
     }
 }
@@ -176,36 +211,25 @@ private func out(_ goal: WorkoutGoal) throws -> OutGoal {
     case .open:
         return OutGoal(type: "open", time: nil, distance: nil, energy: nil, poolSwimDistanceWithTime: nil)
     case .time(let v, let u):
-        return OutGoal(
-            type: "time",
-            time: OutQuantity(value: v, unit: try name(duration: u)),
-            distance: nil, energy: nil, poolSwimDistanceWithTime: nil
-        )
+        return OutGoal(type: "time",
+                       time: OutQuantity(value: v, unit: try name(duration: u)),
+                       distance: nil, energy: nil, poolSwimDistanceWithTime: nil)
     case .distance(let v, let u):
-        return OutGoal(
-            type: "distance",
-            time: nil,
-            distance: OutQuantity(value: v, unit: try name(length: u)),
-            energy: nil, poolSwimDistanceWithTime: nil
-        )
+        return OutGoal(type: "distance", time: nil,
+                       distance: OutQuantity(value: v, unit: try name(length: u)),
+                       energy: nil, poolSwimDistanceWithTime: nil)
     case .energy(let v, let u):
-        return OutGoal(
-            type: "energy",
-            time: nil, distance: nil,
-            energy: OutQuantity(value: v, unit: try name(energy: u)),
-            poolSwimDistanceWithTime: nil
-        )
+        return OutGoal(type: "energy", time: nil, distance: nil,
+                       energy: OutQuantity(value: v, unit: try name(energy: u)),
+                       poolSwimDistanceWithTime: nil)
     case .poolSwimDistanceWithTime(let d, let t):
-        return OutGoal(
-            type: "poolSwimDistanceWithTime",
-            time: nil, distance: nil, energy: nil,
-            poolSwimDistanceWithTime: OutPoolSwim(
-                distance: OutQuantity(value: d.value, unit: try name(length: d.unit)),
-                time: OutQuantity(value: t.value, unit: try name(duration: t.unit))
-            )
-        )
-    @unknown default:
-        throw ParseError.unsupportedGoal("unknown case")
+        return OutGoal(type: "poolSwimDistanceWithTime",
+                       time: nil, distance: nil, energy: nil,
+                       poolSwimDistanceWithTime: OutPoolSwim(
+                           distance: OutQuantity(value: d.value, unit: try name(length: d.unit)),
+                           time: OutQuantity(value: t.value, unit: try name(duration: t.unit))
+                       ))
+    @unknown default: throw ParseError.unsupportedGoal("unknown case")
     }
 }
 
@@ -219,10 +243,7 @@ private func out(_ is_: IntervalStep) throws -> OutIntervalStep {
 }
 
 private func out(_ block: IntervalBlock) throws -> OutBlock {
-    OutBlock(
-        iterations: block.iterations,
-        steps: try block.steps.map { try out($0) }
-    )
+    OutBlock(iterations: block.iterations, steps: try block.steps.map { try out($0) })
 }
 
 private func out(_ c: CustomWorkout) throws -> OutCustomWorkout {
@@ -236,19 +257,61 @@ private func out(_ c: CustomWorkout) throws -> OutCustomWorkout {
     )
 }
 
+private func out(_ g: SingleGoalWorkout) throws -> OutSingleGoalWorkout {
+    let swimName = try swimmingLocationName(g.swimmingLocation)
+    return OutSingleGoalWorkout(
+        activity: try activityName(g.activity),
+        location: try locationName(g.location),
+        swimmingLocation: swimName == "unknown" ? nil : swimName,
+        goal: try out(g.goal)
+    )
+}
+
+private func out(_ p: PacerWorkout) throws -> OutPacerWorkout {
+    OutPacerWorkout(
+        activity: try activityName(p.activity),
+        location: try locationName(p.location),
+        distance: OutQuantity(value: p.distance.value, unit: try name(length: p.distance.unit)),
+        time: OutQuantity(value: p.time.value, unit: try name(duration: p.time.unit))
+    )
+}
+
+private func out(_ a: SwimBikeRunWorkout.Activity) throws -> OutSbrActivity {
+    switch a {
+    case .swimming(let loc):
+        let s = try swimmingLocationName(loc)
+        return OutSbrActivity(kind: "swimming",
+                              location: nil,
+                              swimmingLocation: s == "unknown" ? nil : s)
+    case .cycling(let loc):
+        return OutSbrActivity(kind: "cycling",
+                              location: try locationName(loc),
+                              swimmingLocation: nil)
+    case .running(let loc):
+        return OutSbrActivity(kind: "running",
+                              location: try locationName(loc),
+                              swimmingLocation: nil)
+    @unknown default:
+        throw ParseError.unsupportedWorkoutVariant("unknown SBR activity")
+    }
+}
+
+private func out(_ s: SwimBikeRunWorkout) throws -> OutSwimBikeRunWorkout {
+    OutSwimBikeRunWorkout(
+        displayName: s.displayName,
+        activities: try s.activities.map { try out($0) }
+    )
+}
+
 func parseWorkout(bytes: Data) throws -> OutSpec {
     let plan = try WorkoutPlan(from: bytes)
+    let id = plan.id.uuidString
     switch plan.workout {
-    case .custom(let c):
-        return OutSpec(referenceId: plan.id.uuidString, custom: try out(c), unsupported: nil)
-    case .goal:
-        return OutSpec(referenceId: plan.id.uuidString, custom: nil, unsupported: "singleGoal")
-    case .pacer:
-        return OutSpec(referenceId: plan.id.uuidString, custom: nil, unsupported: "pacer")
-    case .swimBikeRun:
-        return OutSpec(referenceId: plan.id.uuidString, custom: nil, unsupported: "swimBikeRun")
-    @unknown default:
-        throw ParseError.unsupportedWorkoutVariant("unknown workout case")
+    case .custom(let c):      return OutSpec(referenceId: id, custom: try out(c), goal: nil, pacer: nil, swimBikeRun: nil)
+    case .goal(let g):        return OutSpec(referenceId: id, custom: nil, goal: try out(g), pacer: nil, swimBikeRun: nil)
+    case .pacer(let p):       return OutSpec(referenceId: id, custom: nil, goal: nil, pacer: try out(p), swimBikeRun: nil)
+    case .swimBikeRun(let s): return OutSpec(referenceId: id, custom: nil, goal: nil, pacer: nil, swimBikeRun: try out(s))
+    @unknown default: throw ParseError.unsupportedWorkoutVariant("unknown case")
     }
 }
 

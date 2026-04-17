@@ -1,0 +1,15 @@
+{
+  "referenceId": "00000000-0000-4000-8000-000000000069",
+  "goal": {
+    "activity": "swimming",
+    "location": "unknown",
+    "goal": {
+      "type": "distance",
+      "distance": {
+        "value": 1000,
+        "unit": "yards"
+      }
+    },
+    "swimmingLocation": "pool"
+  }
+}

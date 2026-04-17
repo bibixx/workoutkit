@@ -1,0 +1,14 @@
+{
+  "referenceId": "00000000-0000-4000-8000-000000000067",
+  "goal": {
+    "activity": "cycling",
+    "location": "indoor",
+    "goal": {
+      "type": "time",
+      "time": {
+        "value": 45,
+        "unit": "minutes"
+      }
+    }
+  }
+}

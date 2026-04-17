@@ -1,0 +1,22 @@
+{
+  "referenceId": "00000000-0000-4000-8000-00000000000A",
+  "custom": {
+    "activity": "yoga",
+    "location": "unknown",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": {
+                "type": "open"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

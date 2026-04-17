@@ -1,0 +1,14 @@
+{
+  "referenceId": "00000000-0000-4000-8000-00000000006B",
+  "goal": {
+    "activity": "hiking",
+    "location": "outdoor",
+    "goal": {
+      "type": "time",
+      "time": {
+        "value": 2,
+        "unit": "hours"
+      }
+    }
+  }
+}

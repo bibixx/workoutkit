@@ -1,0 +1,14 @@
+{
+  "referenceId": "00000000-0000-4000-8000-000000000065",
+  "goal": {
+    "activity": "running",
+    "location": "outdoor",
+    "goal": {
+      "type": "time",
+      "time": {
+        "value": 30,
+        "unit": "minutes"
+      }
+    }
+  }
+}

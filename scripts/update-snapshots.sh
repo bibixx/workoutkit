@@ -17,8 +17,8 @@ node --experimental-strip-types --no-warnings \
       const { loadSpec } = await import('./tests/src/spec.ts');
       const fs = await import('node:fs');
       const path = await import('node:path');
-      const bytes = encodeWorkoutPlan(loadSpec('tests/fixtures/pool-swim.spec.json'));
-      fs.writeFileSync('tests/snapshots/pool-swim.workout', bytes);
-      console.log('updated tests/snapshots/pool-swim.workout (' + bytes.length + ' bytes)');
+      const bytes = encodeWorkoutPlan(loadSpec('tests/fixtures/custom-pool-swim.spec.json'));
+      fs.writeFileSync('tests/snapshots/custom-pool-swim.workout', bytes);
+      console.log('updated tests/snapshots/custom-pool-swim.workout (' + bytes.length + ' bytes)');
     });
   "

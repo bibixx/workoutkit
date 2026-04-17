@@ -18,11 +18,11 @@ const fixtureDir = resolve(here, "../fixtures");
 const snapshotDir = resolve(here, "../snapshots");
 
 describe("determinism canary", () => {
-  it("pool-swim.spec.json → stable bytes", () => {
-    const spec = loadSpec(join(fixtureDir, "pool-swim.spec.json"));
+  it("custom-pool-swim.spec.json → stable bytes", () => {
+    const spec = loadSpec(join(fixtureDir, "custom-pool-swim.spec.json"));
     const actual = encodeWorkoutPlan(spec);
     const expected = new Uint8Array(
-      readFileSync(join(snapshotDir, "pool-swim.workout")),
+      readFileSync(join(snapshotDir, "custom-pool-swim.workout")),
     );
 
     const equal =
@@ -31,7 +31,7 @@ describe("determinism canary", () => {
 
     if (!equal) {
       throw new Error(
-        "pool-swim byte snapshot drifted.\n" +
+        "custom-pool-swim byte snapshot drifted.\n" +
           "If this is an intentional SDK change, run:\n" +
           "  scripts/update-snapshots.sh\n\n" +
           byteMismatchReport(expected, actual),

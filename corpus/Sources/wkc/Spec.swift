@@ -4,19 +4,47 @@ import Foundation
 // TypeScript SDK. Keep field names identical.
 
 struct Spec: Decodable {
-    let referenceId: String?        // UUID; optional for round-trip tests
+    let referenceId: String?
+    // Exactly one of the following four must be present.
     let custom: CustomWorkoutSpec?
-    // future: `goal`, `pacer`, `swimBikeRun`
+    let goal: SingleGoalWorkoutSpec?
+    let pacer: PacerWorkoutSpec?
+    let swimBikeRun: SwimBikeRunWorkoutSpec?
 }
 
 struct CustomWorkoutSpec: Decodable {
-    let activity: String            // "swimming", "running", "cycling", ...
-    let location: String            // "unknown" | "indoor" | "outdoor"
-    let swimmingLocation: String?   // "unknown" | "pool" | "openWater"
+    let activity: String
+    let location: String
+    let swimmingLocation: String?
     let displayName: String?
     let warmup: StepSpec?
     let blocks: [BlockSpec]
     let cooldown: StepSpec?
+}
+
+struct SingleGoalWorkoutSpec: Decodable {
+    let activity: String
+    let location: String
+    let swimmingLocation: String?
+    let goal: GoalSpec?     // defaults to .open when omitted
+}
+
+struct PacerWorkoutSpec: Decodable {
+    let activity: String
+    let location: String
+    let distance: GoalSpec.Quantity
+    let time: GoalSpec.Quantity
+}
+
+struct SwimBikeRunWorkoutSpec: Decodable {
+    let displayName: String?
+    let activities: [SbrActivitySpec]
+}
+
+struct SbrActivitySpec: Decodable {
+    let kind: String              // "swimming" | "cycling" | "running"
+    let location: String?         // session location; used by cycling/running
+    let swimmingLocation: String? // used by swimming
 }
 
 struct BlockSpec: Decodable {
@@ -25,7 +53,7 @@ struct BlockSpec: Decodable {
 }
 
 struct IntervalStepSpec: Decodable {
-    let purpose: String             // "work" | "recovery"
+    let purpose: String
     let step: StepSpec
 }
 

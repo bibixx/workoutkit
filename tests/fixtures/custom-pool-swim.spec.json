@@ -1,0 +1,76 @@
+{
+  "referenceId": "00000000-0000-4000-8000-000000000001",
+  "custom": {
+    "activity": "swimming",
+    "location": "outdoor",
+    "displayName": "Budapest Swim #2 - Endurance",
+    "warmup": {
+      "goal": {
+        "type": "distance",
+        "distance": {
+          "value": 200,
+          "unit": "meters"
+        }
+      }
+    },
+    "blocks": [
+      {
+        "iterations": 4,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "Freestyle",
+              "goal": {
+                "type": "distance",
+                "distance": {
+                  "value": 200,
+                  "unit": "meters"
+                }
+              }
+            }
+          },
+          {
+            "purpose": "recovery",
+            "step": {
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 40,
+                  "unit": "seconds"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "Backstroke",
+              "goal": {
+                "type": "distance",
+                "distance": {
+                  "value": 200,
+                  "unit": "meters"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "cooldown": {
+      "goal": {
+        "type": "distance",
+        "distance": {
+          "value": 100,
+          "unit": "meters"
+        }
+      }
+    }
+  }
+}

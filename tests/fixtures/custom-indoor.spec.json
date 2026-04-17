@@ -1,0 +1,39 @@
+{
+  "referenceId": "00000000-0000-4000-8000-000000000009",
+  "custom": {
+    "activity": "coreTraining",
+    "location": "indoor",
+    "displayName": "Core circuit",
+    "blocks": [
+      {
+        "iterations": 4,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 45,
+                  "unit": "seconds"
+                }
+              }
+            }
+          },
+          {
+            "purpose": "recovery",
+            "step": {
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 15,
+                  "unit": "seconds"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

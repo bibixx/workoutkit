@@ -1,0 +1,10 @@
+{
+  "referenceId": "00000000-0000-4000-8000-000000000066",
+  "goal": {
+    "activity": "running",
+    "location": "outdoor",
+    "goal": {
+      "type": "open"
+    }
+  }
+}

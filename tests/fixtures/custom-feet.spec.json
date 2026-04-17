@@ -1,0 +1,26 @@
+{
+  "referenceId": "00000000-0000-4000-8000-000000000007",
+  "custom": {
+    "activity": "hiking",
+    "location": "outdoor",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": {
+                "type": "distance",
+                "distance": {
+                  "value": 1000,
+                  "unit": "feet"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "referenceId": "00000000-0000-4000-8000-0000000000CA",
+  "pacer": {
+    "activity": "cycling",
+    "location": "outdoor",
+    "distance": {
+      "value": 40,
+      "unit": "kilometers"
+    },
+    "time": {
+      "value": 60,
+      "unit": "minutes"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "referenceId": "00000000-0000-4000-8000-00000000012D",
+  "swimBikeRun": {
+    "displayName": "Triathlon",
+    "activities": [
+      {
+        "kind": "swimming",
+        "swimmingLocation": "openWater"
+      },
+      {
+        "kind": "cycling",
+        "location": "outdoor"
+      },
+      {
+        "kind": "running",
+        "location": "outdoor"
+      }
+    ]
+  }
+}

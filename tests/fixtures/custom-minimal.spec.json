@@ -1,0 +1,26 @@
+{
+  "referenceId": "00000000-0000-4000-8000-000000000008",
+  "custom": {
+    "activity": "rowing",
+    "location": "indoor",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 10,
+                  "unit": "minutes"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "referenceId": "00000000-0000-4000-8000-00000000006A",
+  "goal": {
+    "activity": "swimming",
+    "location": "outdoor",
+    "goal": {
+      "type": "distance",
+      "distance": {
+        "value": 2,
+        "unit": "kilometers"
+      }
+    },
+    "swimmingLocation": "openWater"
+  }
+}

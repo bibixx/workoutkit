@@ -1,0 +1,20 @@
+{
+  "referenceId": "00000000-0000-4000-8000-000000000130",
+  "swimBikeRun": {
+    "displayName": "Duathlon",
+    "activities": [
+      {
+        "kind": "running",
+        "location": "outdoor"
+      },
+      {
+        "kind": "cycling",
+        "location": "outdoor"
+      },
+      {
+        "kind": "running",
+        "location": "outdoor"
+      }
+    ]
+  }
+}

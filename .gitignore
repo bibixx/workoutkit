@@ -6,3 +6,4 @@ node_modules/
 .swiftpm/
 dist/
 .DS_Store
+artifacts/*.swiftinterface

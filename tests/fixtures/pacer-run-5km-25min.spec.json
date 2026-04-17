@@ -1,0 +1,15 @@
+{
+  "referenceId": "00000000-0000-4000-8000-0000000000C8",
+  "pacer": {
+    "activity": "running",
+    "location": "outdoor",
+    "distance": {
+      "value": 5,
+      "unit": "kilometers"
+    },
+    "time": {
+      "value": 25,
+      "unit": "minutes"
+    }
+  }
+}

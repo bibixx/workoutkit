@@ -3,21 +3,93 @@
 // HKWorkoutActivityType raw values. Keep them explicit so the TS side reads
 // the same as WorkoutKit's Swift API.
 export const ActivityType = {
-  running: 37,
+  americanFootball: 1,
+  archery: 2,
+  australianFootball: 3,
+  badminton: 4,
+  baseball: 5,
+  basketball: 6,
+  bowling: 7,
+  boxing: 8,
+  climbing: 9,
+  cricket: 10,
+  crossTraining: 11,
+  curling: 12,
   cycling: 13,
-  swimming: 46,
-  walking: 52,
-  hiking: 17,
+  dance: 14,
+  elliptical: 16,
+  equestrianSports: 17,
+  fencing: 18,
+  fishing: 19,
+  functionalStrengthTraining: 20,
+  golf: 21,
+  gymnastics: 22,
+  handball: 23,
+  hiking: 24,
+  hockey: 25,
+  hunting: 26,
+  lacrosse: 27,
+  martialArts: 28,
+  mindAndBody: 29,
+  paddleSports: 31,
+  play: 32,
+  preparationAndRecovery: 33,
+  racquetball: 34,
   rowing: 35,
-  functionalStrength: 20,
-  traditionalStrength: 50,
-  coreTraining: 62,
+  rugby: 36,
+  running: 37,
+  sailing: 38,
+  skatingSports: 39,
+  snowSports: 40,
+  soccer: 41,
+  softball: 42,
+  squash: 43,
+  stairClimbing: 44,
+  surfingSports: 45,
+  swimming: 46,
+  tableTennis: 47,
+  tennis: 48,
+  trackAndField: 49,
+  traditionalStrengthTraining: 50,
+  volleyball: 51,
+  walking: 52,
+  waterFitness: 53,
+  waterPolo: 54,
+  waterSports: 55,
+  wrestling: 56,
   yoga: 57,
+  barre: 58,
+  coreTraining: 59,
+  crossCountrySkiing: 60,
+  downhillSkiing: 61,
+  flexibility: 62,
   highIntensityIntervalTraining: 63,
+  jumpRope: 64,
+  kickboxing: 65,
+  pilates: 66,
+  snowboarding: 67,
+  stairs: 68,
+  stepTraining: 69,
+  wheelchairWalkPace: 70,
+  wheelchairRunPace: 71,
+  taiChi: 72,
+  mixedCardio: 73,
+  handCycling: 74,
+  discSports: 75,
+  fitnessGaming: 76,
+  cardioDance: 77,
+  socialDance: 78,
+  pickleball: 79,
+  cooldown: 80,
+  swimBikeRun: 82,
+  transition: 83,
+  underwaterDiving: 84,
+  other: 3000,
 } as const;
 export type ActivityName = keyof typeof ActivityType;
 
 export type Location = "unknown" | "indoor" | "outdoor";
+export type SwimmingLocation = "unknown" | "pool" | "openWater";
 
 export type LengthUnit = "meters" | "kilometers" | "feet" | "yards" | "miles";
 export type DurationUnit = "seconds" | "minutes" | "hours";
@@ -41,7 +113,6 @@ export type Goal =
 export type Step = {
   displayName?: string;
   goal: Goal;
-  // alert — future
 };
 
 export type Purpose = "work" | "recovery";
@@ -65,8 +136,36 @@ export type CustomWorkout = {
   cooldown?: Step;
 };
 
+export type SingleGoalWorkout = {
+  activity: ActivityName;
+  location: Location;
+  swimmingLocation?: SwimmingLocation;  // default "unknown"
+  goal: Goal;
+};
+
+export type PacerWorkout = {
+  activity: ActivityName;
+  location: Location;
+  distance: Quantity<LengthUnit>;
+  time: Quantity<DurationUnit>;
+};
+
+export type SbrActivity =
+  | { kind: "swimming"; swimmingLocation?: SwimmingLocation }
+  | { kind: "cycling"; location?: Location }
+  | { kind: "running"; location?: Location };
+
+export type SwimBikeRunWorkout = {
+  displayName?: string;
+  activities: SbrActivity[];
+};
+
+// Exactly one of custom/goal/pacer/swimBikeRun must be present. The
+// discriminated structure is enforced at the encoder level.
 export type WorkoutPlan = {
-  referenceId: string; // UUID
-  custom: CustomWorkout;
-  // future: goal | pacer | swimBikeRun
+  referenceId: string;
+  custom?: CustomWorkout;
+  goal?: SingleGoalWorkout;
+  pacer?: PacerWorkout;
+  swimBikeRun?: SwimBikeRunWorkout;
 };

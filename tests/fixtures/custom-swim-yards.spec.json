@@ -1,0 +1,26 @@
+{
+  "referenceId": "00000000-0000-4000-8000-000000000006",
+  "custom": {
+    "activity": "swimming",
+    "location": "outdoor",
+    "blocks": [
+      {
+        "iterations": 3,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": {
+                "type": "distance",
+                "distance": {
+                  "value": 100,
+                  "unit": "yards"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "referenceId": "00000000-0000-4000-8000-00000000006C",
+  "goal": {
+    "activity": "rowing",
+    "location": "unknown",
+    "goal": {
+      "type": "distance",
+      "distance": {
+        "value": 2000,
+        "unit": "meters"
+      }
+    }
+  }
+}
