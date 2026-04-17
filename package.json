@@ -8,6 +8,8 @@
   ],
   "scripts": {
     "build:corpus": "swift build --package-path corpus -c release",
+    "build:sdk": "npm -w @bibixx/workoutkit run build",
+    "typecheck": "npm -w @bibixx/workoutkit run typecheck",
     "extract": "scripts/extract-workoutkit.sh",
     "test": "npm -w tests run test"
   }

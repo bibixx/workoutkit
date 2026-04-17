@@ -5,5 +5,8 @@ node_modules/
 .build/
 .swiftpm/
 dist/
+sdk/dist/
+sdk/README.md
+sdk/LICENSE
 .DS_Store
 artifacts/*.swiftinterface

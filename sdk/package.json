@@ -1,10 +1,70 @@
 {
-  "name": "workout-file-sdk",
-  "version": "0.0.1",
-  "private": true,
+  "name": "@bibixx/workoutkit",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for reading and writing Apple's .workout file format (WorkoutKit).",
+  "keywords": [
+    "apple",
+    "workoutkit",
+    "workout",
+    "healthkit",
+    "fitness",
+    "ios",
+    "watchos",
+    "protobuf"
+  ],
+  "license": "MIT",
+  "author": "Bartosz Legięć",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bibixx/workoutkit.git",
+    "directory": "sdk"
+  },
+  "homepage": "https://github.com/bibixx/workoutkit#readme",
+  "bugs": "https://github.com/bibixx/workoutkit/issues",
   "type": "module",
-  "main": "./src/index.ts",
+  "sideEffects": false,
+  "engines": { "node": ">=18" },
+  "files": ["dist", "README.md", "LICENSE"],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "development": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./encode": {
+      "development": "./src/encode-api.ts",
+      "types": "./dist/encode.d.ts",
+      "import": "./dist/encode.js",
+      "require": "./dist/encode.cjs"
+    },
+    "./decode": {
+      "development": "./src/decode-api.ts",
+      "types": "./dist/decode.d.ts",
+      "import": "./dist/decode.js",
+      "require": "./dist/decode.cjs"
+    },
+    "./fs": {
+      "development": "./src/fs.ts",
+      "types": "./dist/fs.d.ts",
+      "import": "./dist/fs.js",
+      "require": "./dist/fs.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "prepack": "cp ../README.md ./README.md && cp ../LICENSE ./LICENSE",
+    "postpack": "rm -f ./README.md ./LICENSE",
+    "prepublishOnly": "tsup"
+  },
+  "publishConfig": { "access": "public" },
+  "devDependencies": {
+    "@types/node": "^20.12.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0"
   }
 }
