@@ -1,6 +1,6 @@
 {
   "name": "@bibixx/workoutkit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TypeScript SDK for reading and writing Apple's .workout file format (WorkoutKit).",
   "keywords": [
     "apple",
@@ -23,8 +23,14 @@
   "bugs": "https://github.com/bibixx/workoutkit/issues",
   "type": "module",
   "sideEffects": false,
-  "engines": { "node": ">=18" },
-  "files": ["dist", "README.md", "LICENSE"],
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -61,7 +67,9 @@
     "postpack": "rm -f ./README.md ./LICENSE",
     "prepublishOnly": "tsup"
   },
-  "publishConfig": { "access": "public" },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/node": "^20.12.0",
     "tsup": "^8.3.0",
