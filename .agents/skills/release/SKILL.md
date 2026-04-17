@@ -100,8 +100,11 @@ back up so `git status` stays clean.
 
 ### 7. Tag & push
 
+Use an **annotated** tag — lightweight tags are rejected when
+`tag.gpgSign=true` is set (it is in this repo).
+
 ```bash
-git tag vNEW
+git tag -a vNEW -m "Release @bibixx/workoutkit vNEW"
 git push origin main --follow-tags
 ```
 
