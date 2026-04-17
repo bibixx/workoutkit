@@ -3,7 +3,10 @@
 
 <div align="center">
   <a href="https://github.com/bibixx/workoutkit">
-    <img src=".github/readme/logo.svg" alt="workoutkit" width="160">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/bibixx/workoutkit/main/.github/readme/logo-dark.svg">
+      <img src="https://raw.githubusercontent.com/bibixx/workoutkit/main/.github/readme/logo-light.svg" alt="workoutkit" width="160">
+    </picture>
   </a>
 
 <h3 align="center">workoutkit</h3>
