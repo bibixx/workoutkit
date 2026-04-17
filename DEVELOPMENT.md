@@ -12,7 +12,7 @@ workoutkit/
 │   ├── tsup.config.ts             build config (ESM + CJS + .d.ts, multi-entry)
 │   └── package.json               publishable package metadata
 ├── tests/                         Vitest harness (fixtures + byte-diff tests)
-│   ├── src/                       *.test.ts against sdk/src via `development` condition
+│   ├── src/                       *.test.ts against sdk/src via Vitest resolve.alias
 │   ├── fixtures/                  *.spec.json — input to both the Swift oracle and the TS SDK
 │   └── snapshots/                 recorded Apple-parser output per fixture
 ├── corpus/                        Swift CLI oracle: spec JSON → .workout bytes via WorkoutKit
@@ -37,11 +37,16 @@ npm run build:corpus      # SwiftPM build of the WorkoutKit oracle CLI
 npm run extract           # re-run WorkoutKit symbol/section extraction
 ```
 
-**Zero-rebuild test loop.** `tests/vitest.config.ts` sets
-`resolve.conditions: ["development"]`, which makes the subpath exports in
-`sdk/package.json` resolve directly to `sdk/src/*.ts`. No build step is
-needed between editing source and running tests. Consumers, running without
-that condition, get `sdk/dist/*` instead.
+**Zero-rebuild test loop.** `tests/vitest.config.ts` aliases
+`@bibixx/workoutkit[/subpath]` directly to `sdk/src/*.ts`. No build step is
+needed between editing source and running tests. Consumers see only
+`dist/*` via `exports`.
+
+> Why not a `development` export condition? We tried that — Vite
+> default-includes `development` in consumers' dev mode, which then
+> resolved against `./src/*.ts` paths that aren't in the published
+> tarball (`files: ["dist", ...]`). Scoping the dev-loop resolution to
+> our vitest config via `resolve.alias` avoids the leak.
 
 ## Testing strategy
 

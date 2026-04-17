@@ -16,19 +16,22 @@ Orientation notes for coding agents working in this repo.
 ## Dev loop
 
 - `npm install` — workspaces (`sdk`, `tests`).
-- `npm test` — Vitest runs against `sdk/src/*.ts` directly via Vitest's
-  `development` resolve condition. **No build step** is needed in the dev
-  loop.
+- `npm test` — Vitest runs against `sdk/src/*.ts` directly via
+  `resolve.alias` in `tests/vitest.config.ts`. **No build step** is
+  needed in the dev loop.
 - `npm run typecheck` — `tsc --noEmit` against the SDK sources.
 - `npm run build:sdk` — tsup → `sdk/dist/` (ESM + CJS + .d.ts).
 - `npm run build:corpus` — SwiftPM build of the WorkoutKit oracle CLI.
 
 ## Conventions
 
-- **Published entry points** are declared in `sdk/package.json` `exports`.
-  Each subpath has a `development` condition pointing at `src/*.ts` (for
-  the dev loop) and `import`/`require`/`types` pointing at `dist/*` (for
-  consumers). If you add a new subpath, mirror both.
+- **Published entry points** are declared in `sdk/package.json` `exports`
+  with `types`/`import`/`require` pointing at `dist/*`. If you add a new
+  subpath, (1) add a tsup entry, (2) add the `exports` block, and (3)
+  add a `resolve.alias` line in `tests/vitest.config.ts` so tests resolve
+  to `sdk/src/*.ts` without a build step. Do **not** use a `development`
+  export condition — Vite default-matches it in consumers, resolving to
+  files not in the tarball.
 - **Tree-shake guarantee.** `tests/src/tree-shake.test.ts` statically walks
   the import graph and asserts each subpath pulls in only what it should.
   tsup is configured with `splitting: false` so the published output keeps

@@ -36,25 +36,21 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
     "./encode": {
-      "development": "./src/encode-api.ts",
       "types": "./dist/encode.d.ts",
       "import": "./dist/encode.js",
       "require": "./dist/encode.cjs"
     },
     "./decode": {
-      "development": "./src/decode-api.ts",
       "types": "./dist/decode.d.ts",
       "import": "./dist/decode.js",
       "require": "./dist/decode.cjs"
     },
     "./fs": {
-      "development": "./src/fs.ts",
       "types": "./dist/fs.d.ts",
       "import": "./dist/fs.js",
       "require": "./dist/fs.cjs"
