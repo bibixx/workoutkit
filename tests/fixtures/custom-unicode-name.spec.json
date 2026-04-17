@@ -1,0 +1,28 @@
+{
+  "referenceId": "00000000-0000-4000-8000-0000000001F5",
+  "custom": {
+    "activity": "running",
+    "location": "outdoor",
+    "displayName": "\ud83c\udfc3\u200d\u2640\ufe0f \u6668\u8dd1 \u2014 caf\u00e9 r\u00e9sum\u00e9",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "Aerobic \u00e9\u0302",
+              "goal": {
+                "type": "distance",
+                "distance": {
+                  "value": 5,
+                  "unit": "kilometers"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

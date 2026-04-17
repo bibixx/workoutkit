@@ -1,0 +1,24 @@
+{
+  "referenceId": "00000000-0000-4000-8000-0000000001F9",
+  "custom": {
+    "activity": "walking",
+    "location": "outdoor",
+    "displayName": "",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "",
+              "goal": {
+                "type": "open"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

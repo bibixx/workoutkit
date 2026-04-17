@@ -1,0 +1,33 @@
+{
+  "referenceId": "00000000-0000-4000-8000-000000000401",
+  "custom": {
+    "activity": "swimming",
+    "location": "outdoor",
+    "displayName": "4\u00d7100 on 2:00",
+    "blocks": [
+      {
+        "iterations": 4,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": {
+                "type": "poolSwimDistanceWithTime",
+                "poolSwimDistanceWithTime": {
+                  "distance": {
+                    "value": 100,
+                    "unit": "meters"
+                  },
+                  "time": {
+                    "value": 2,
+                    "unit": "minutes"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

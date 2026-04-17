@@ -1,0 +1,24 @@
+{
+  "referenceId": "00000000-0000-4000-8000-0000000001F6",
+  "custom": {
+    "activity": "cycling",
+    "location": "outdoor",
+    "displayName": "Endurance block \u2014 long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long finish",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "Endurance block \u2014 long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long finish",
+              "goal": {
+                "type": "open"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

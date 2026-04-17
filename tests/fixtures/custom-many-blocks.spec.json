@@ -1,0 +1,190 @@
+{
+  "referenceId": "00000000-0000-4000-8000-0000000001F8",
+  "custom": {
+    "activity": "running",
+    "location": "outdoor",
+    "displayName": "Ladder",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "Rep 1",
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 40,
+                  "unit": "seconds"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "Rep 2",
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 50,
+                  "unit": "seconds"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "Rep 3",
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 60,
+                  "unit": "seconds"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "Rep 4",
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 70,
+                  "unit": "seconds"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "Rep 5",
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 80,
+                  "unit": "seconds"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "Rep 6",
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 90,
+                  "unit": "seconds"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "Rep 7",
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 100,
+                  "unit": "seconds"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "Rep 8",
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 110,
+                  "unit": "seconds"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "Rep 9",
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 120,
+                  "unit": "seconds"
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "displayName": "Rep 10",
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 130,
+                  "unit": "seconds"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

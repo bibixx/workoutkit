@@ -1,0 +1,39 @@
+{
+  "referenceId": "00000000-0000-4000-8000-0000000001F7",
+  "custom": {
+    "activity": "highIntensityIntervalTraining",
+    "location": "indoor",
+    "displayName": "Tabata x 100",
+    "blocks": [
+      {
+        "iterations": 100,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 20,
+                  "unit": "seconds"
+                }
+              }
+            }
+          },
+          {
+            "purpose": "recovery",
+            "step": {
+              "goal": {
+                "type": "time",
+                "time": {
+                  "value": 10,
+                  "unit": "seconds"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

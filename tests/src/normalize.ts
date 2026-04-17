@@ -19,7 +19,11 @@ function walk(node: unknown): unknown {
   if (isObject(node)) {
     const out: Obj = {};
     for (const [k, v] of Object.entries(node)) {
+      // Drop undefined and empty strings — proto3 default-omission means
+      // an empty string on the wire is indistinguishable from "not set".
+      // Apple's parser surfaces the absence, not the empty value.
       if (v === undefined) continue;
+      if (v === "") continue;
       out[k] = walk(v);
     }
     return out;

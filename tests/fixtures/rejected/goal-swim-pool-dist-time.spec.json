@@ -1,0 +1,23 @@
+{
+  "_why": "poolSwimDistanceWithTime is only valid as a step goal inside CustomWorkout \u2014 SingleGoalWorkout rejects it.",
+  "_expectError": "unsupportedSwimmingGoal",
+  "referenceId": "00000000-0000-4000-8000-000000000191",
+  "goal": {
+    "activity": "swimming",
+    "location": "unknown",
+    "swimmingLocation": "pool",
+    "goal": {
+      "type": "poolSwimDistanceWithTime",
+      "poolSwimDistanceWithTime": {
+        "distance": {
+          "value": 1500,
+          "unit": "meters"
+        },
+        "time": {
+          "value": 30,
+          "unit": "minutes"
+        }
+      }
+    }
+  }
+}
