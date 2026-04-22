@@ -55,14 +55,12 @@ cause over `--no-verify`.
   `no-conditional-expect`) that false-positive on our dynamic
   fixture-driven `it(name, …)` pattern and the `try/catch` + `expect`
   shape in `rejected.test.ts`.
-- [`.prettierignore`](.prettierignore) — keeps `oxfmt` away from
-  hand-crafted docs: `.agents/`, `artifacts/` (ASCII wire-format
-  trees, byte dumps), `samples/`. oxfmt picks this up automatically
-  (it reads `.gitignore` + `.prettierignore` by default).
-- `oxfmt` uses defaults (no `.oxfmtrc.json`). If you find yourself
-  fighting a specific rewrite, add an ignore entry rather than a
-  repo-wide config override — the defaults are deliberately Prettier-
-  compatible.
+- [`.oxfmtrc.json`](.oxfmtrc.json) — `oxfmt` config. Uses Prettier-
+  compatible defaults; only `ignorePatterns` is set, keeping the
+  formatter away from hand-crafted docs (`.agents/`, `artifacts/`
+  with ASCII wire-format trees and byte dumps, `samples/`). If you
+  find yourself fighting a specific rewrite, add an ignore entry
+  rather than a repo-wide rule override.
 
 ## Conventions
 
