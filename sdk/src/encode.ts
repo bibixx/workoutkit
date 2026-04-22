@@ -4,15 +4,22 @@
 import { Writer } from "./wire.ts";
 import {
   ActivityType,
+  type AlertJson,
+  type AlertMetric,
+  type CadenceUnit,
   type CustomWorkoutJson,
   type GoalJson,
+  type HeartRateUnit,
   type IntervalBlockJson,
   type IntervalStepJson,
   type Location,
   type PacerWorkoutJson,
+  type PowerUnit,
   type Purpose,
+  type Quantity,
   type SbrActivityJson,
   type SingleGoalWorkoutJson,
+  type SpeedJson,
   type StepJson,
   type SwimBikeRunWorkoutJson,
   type SwimmingLocation,
@@ -124,9 +131,162 @@ function writeGoal(w: Writer, g: GoalJson): void {
   }
 }
 
+// ---- Alerts -------------------------------------------------------------
+// See artifacts/alerts-wire-format.md for the full schema discovery notes.
+
+// apple.workout.AlertTargetType — identifies the metric + current/average axis.
+const ALERT_TARGET_TYPE = {
+  unknownMetric: 0,
+  averageSpeed: 1,
+  currentSpeed: 2,
+  currentCadence: 3,
+  currentPower: 4,
+  currentHeartRate: 5,
+  averagePower: 6,
+} as const;
+
+// apple.workout.AlertTargetKind — which shape the target takes.
+const ALERT_TARGET_KIND = {
+  unknown: 0,
+  value: 1,
+  range: 2,
+  zone: 3,
+} as const;
+
+// WorkoutAlert message fields that carry the per-metric sub-alert.
+const WORKOUT_ALERT_FIELD = {
+  speed: 4,
+  cadence: 5,
+  power: 6,
+  heartRate: 7,
+} as const;
+
+const POWER_UNIT_PROTO: Record<PowerUnit, number> = {
+  watts: 1,
+  kilowatts: 2,
+};
+
+function powerTargetType(metric: AlertMetric | undefined): number {
+  return metric === "average"
+    ? ALERT_TARGET_TYPE.averagePower
+    : ALERT_TARGET_TYPE.currentPower;
+}
+
+function speedTargetType(metric: AlertMetric | undefined): number {
+  return metric === "average"
+    ? ALERT_TARGET_TYPE.averageSpeed
+    : ALERT_TARGET_TYPE.currentSpeed;
+}
+
+// PowerValue is the standard {unit, value} Quantity shape.
+function writePowerValue(w: Writer, p: Quantity<PowerUnit>): void {
+  w.uint32Required(1, POWER_UNIT_PROTO[p.unit]);
+  w.doubleRequired(2, p.value);
+}
+
+// HeartRateValue has a single double field (bpm). Apple resolves
+// `WorkoutAlertMetric.countPerMinute` to a canonical UnitFrequency, so the
+// magnitude on the wire is exactly beats per minute.
+function writeHeartRateValue(w: Writer, hr: Quantity<HeartRateUnit>): void {
+  w.doubleRequired(1, hr.value);
+}
+
+// SpeedValue is a (distance, time) pair — covers both m/s and pace shapes.
+function writeSpeedValue(w: Writer, s: SpeedJson): void {
+  w.message(1, (d) => writeLengthQuantity(d, s.distance));
+  w.message(2, (t) => writeDurationQuantity(t, s.time));
+}
+
+// CadenceValue is a (count, duration) pair. Users only ever supply
+// "countPerMinute"; anchor the duration at 1 minute so `count` holds cpm.
+function writeCadenceValue(w: Writer, c: Quantity<CadenceUnit>): void {
+  w.uint32Required(1, Math.round(c.value));
+  w.message(2, (d) => writeDurationQuantity(d, { value: 1, unit: "minutes" }));
+}
+
+function writeAlert(w: Writer, a: AlertJson): void {
+  switch (a.type) {
+    case "heartRateZone":
+      w.uint32Required(1, ALERT_TARGET_TYPE.currentHeartRate);
+      w.uint32Required(2, ALERT_TARGET_KIND.zone);
+      w.message(WORKOUT_ALERT_FIELD.heartRate, (sub) => {
+        sub.message(1, (zt) => zt.uint32Required(1, a.zone));
+      });
+      return;
+    case "heartRateRange":
+      w.uint32Required(1, ALERT_TARGET_TYPE.currentHeartRate);
+      w.uint32Required(2, ALERT_TARGET_KIND.range);
+      w.message(WORKOUT_ALERT_FIELD.heartRate, (sub) => {
+        sub.message(2, (range) => {
+          range.message(1, (m) => writeHeartRateValue(m, a.min));
+          range.message(2, (m) => writeHeartRateValue(m, a.max));
+        });
+      });
+      return;
+    case "powerZone":
+      w.uint32Required(1, ALERT_TARGET_TYPE.currentPower);
+      w.uint32Required(2, ALERT_TARGET_KIND.zone);
+      w.message(WORKOUT_ALERT_FIELD.power, (sub) => {
+        sub.message(3, (zt) => zt.uint32Required(1, a.zone));
+      });
+      return;
+    case "powerRange":
+      w.uint32Required(1, powerTargetType(a.metric));
+      w.uint32Required(2, ALERT_TARGET_KIND.range);
+      w.message(WORKOUT_ALERT_FIELD.power, (sub) => {
+        sub.message(2, (range) => {
+          range.message(1, (m) => writePowerValue(m, a.min));
+          range.message(2, (m) => writePowerValue(m, a.max));
+        });
+      });
+      return;
+    case "powerThreshold":
+      w.uint32Required(1, powerTargetType(a.metric));
+      w.uint32Required(2, ALERT_TARGET_KIND.value);
+      w.message(WORKOUT_ALERT_FIELD.power, (sub) => {
+        sub.message(1, (target) => writePowerValue(target, a.threshold));
+      });
+      return;
+    case "speedRange":
+      w.uint32Required(1, speedTargetType(a.metric));
+      w.uint32Required(2, ALERT_TARGET_KIND.range);
+      w.message(WORKOUT_ALERT_FIELD.speed, (sub) => {
+        sub.message(2, (range) => {
+          range.message(1, (m) => writeSpeedValue(m, a.min));
+          range.message(2, (m) => writeSpeedValue(m, a.max));
+        });
+      });
+      return;
+    case "speedThreshold":
+      w.uint32Required(1, speedTargetType(a.metric));
+      w.uint32Required(2, ALERT_TARGET_KIND.value);
+      w.message(WORKOUT_ALERT_FIELD.speed, (sub) => {
+        sub.message(1, (target) => writeSpeedValue(target, a.threshold));
+      });
+      return;
+    case "cadenceThreshold":
+      w.uint32Required(1, ALERT_TARGET_TYPE.currentCadence);
+      w.uint32Required(2, ALERT_TARGET_KIND.value);
+      w.message(WORKOUT_ALERT_FIELD.cadence, (sub) => {
+        sub.message(1, (target) => writeCadenceValue(target, a.threshold));
+      });
+      return;
+    case "cadenceRange":
+      w.uint32Required(1, ALERT_TARGET_TYPE.currentCadence);
+      w.uint32Required(2, ALERT_TARGET_KIND.range);
+      w.message(WORKOUT_ALERT_FIELD.cadence, (sub) => {
+        sub.message(2, (range) => {
+          range.message(1, (m) => writeCadenceValue(m, a.min));
+          range.message(2, (m) => writeCadenceValue(m, a.max));
+        });
+      });
+      return;
+  }
+}
+
 function writeStep(w: Writer, s: StepJson): void {
   w.message(1, (sub) => writeGoal(sub, s.goal));
-  // field 2 = alert (not supported yet)
+  if (s.alert) w.message(2, (sub) => writeAlert(sub, s.alert!));
   w.string(3, s.displayName);
 }
 

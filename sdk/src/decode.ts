@@ -6,19 +6,25 @@
 import {
   ActivityType,
   type ActivityName,
+  type AlertJson,
+  type AlertMetric,
+  type CadenceUnit,
   type CustomWorkoutJson,
   type DurationUnit,
   type EnergyUnit,
   type GoalJson,
+  type HeartRateUnit,
   type IntervalBlockJson,
   type IntervalStepJson,
   type LengthUnit,
   type Location,
   type PacerWorkoutJson,
+  type PowerUnit,
   type Purpose,
   type Quantity,
   type SbrActivityJson,
   type SingleGoalWorkoutJson,
+  type SpeedJson,
   type StepJson,
   type SwimBikeRunWorkoutJson,
   type SwimmingLocation,
@@ -256,17 +262,319 @@ function readGoal(r: Reader): GoalJson {
   }
 }
 
+// ---- Alert readers ------------------------------------------------------
+
+const POWER_UNIT_BY_PROTO: Record<number, PowerUnit> = {
+  1: "watts",
+  2: "kilowatts",
+};
+
+const ALERT_TARGET_TYPE = {
+  averageSpeed: 1,
+  currentSpeed: 2,
+  currentCadence: 3,
+  currentPower: 4,
+  currentHeartRate: 5,
+  averagePower: 6,
+} as const;
+
+const ALERT_TARGET_KIND = {
+  value: 1,
+  range: 2,
+  zone: 3,
+} as const;
+
+function readPowerValue(r: Reader): Quantity<PowerUnit> {
+  let unitRaw = 0;
+  let value = 0;
+  while (!r.eof()) {
+    const { field, wire } = r.tag();
+    if (field === 1 && wire === WIRE_VARINT) unitRaw = r.uint32();
+    else if (field === 2 && wire === WIRE_I64) value = r.double();
+    else r.skip(wire);
+  }
+  const unit = POWER_UNIT_BY_PROTO[unitRaw];
+  if (!unit) throw new Error(`power: unknown unit enum ${unitRaw}`);
+  return { value, unit };
+}
+
+function readHeartRateValue(r: Reader): Quantity<HeartRateUnit> {
+  let value = 0;
+  while (!r.eof()) {
+    const { field, wire } = r.tag();
+    if (field === 1 && wire === WIRE_I64) value = r.double();
+    else r.skip(wire);
+  }
+  return { value, unit: "beatsPerMinute" };
+}
+
+function readSpeedValue(r: Reader): SpeedJson {
+  let distance: Q<LengthUnit> | undefined;
+  let time: Q<DurationUnit> | undefined;
+  while (!r.eof()) {
+    const { field, wire } = r.tag();
+    if (field === 1 && wire === WIRE_LEN) distance = readLengthQuantity(r.subReader());
+    else if (field === 2 && wire === WIRE_LEN) time = readDurationQuantity(r.subReader());
+    else r.skip(wire);
+  }
+  if (!distance) throw new Error("speedValue: missing distance");
+  if (!time) throw new Error("speedValue: missing time");
+  return { distance, time };
+}
+
+function readCadenceValue(r: Reader): Quantity<CadenceUnit> {
+  let count = 0;
+  // Apple always writes duration = 1 minute so count is literally cpm. We
+  // still parse the duration (and collapse any unit) so weird producers don't
+  // silently corrupt the value.
+  let durationSeconds = 60;
+  while (!r.eof()) {
+    const { field, wire } = r.tag();
+    if (field === 1 && wire === WIRE_VARINT) count = r.uint32();
+    else if (field === 2 && wire === WIRE_LEN) {
+      const d = readDurationQuantity(r.subReader());
+      durationSeconds = toSeconds(d);
+    } else r.skip(wire);
+  }
+  if (durationSeconds <= 0) {
+    throw new Error("cadenceValue: non-positive duration");
+  }
+  return { value: (count * 60) / durationSeconds, unit: "countPerMinute" };
+}
+
+function toSeconds(d: Q<DurationUnit>): number {
+  switch (d.unit) {
+    case "seconds": return d.value;
+    case "minutes": return d.value * 60;
+    case "hours":   return d.value * 3600;
+  }
+}
+
+function zoneValue(r: Reader): number {
+  let zone = 0;
+  while (!r.eof()) {
+    const { field, wire } = r.tag();
+    if (field === 1 && wire === WIRE_VARINT) zone = r.uint32();
+    else r.skip(wire);
+  }
+  return zone;
+}
+
+function readHeartRateAlert(
+  r: Reader,
+  targetKind: number,
+  targetType: number,
+): AlertJson {
+  let zone: number | undefined;
+  let rangeMin: Quantity<HeartRateUnit> | undefined;
+  let rangeMax: Quantity<HeartRateUnit> | undefined;
+
+  while (!r.eof()) {
+    const { field, wire } = r.tag();
+    if (field === 1 && wire === WIRE_LEN) {
+      zone = zoneValue(r.subReader());
+    } else if (field === 2 && wire === WIRE_LEN) {
+      const sub = r.subReader();
+      while (!sub.eof()) {
+        const tag = sub.tag();
+        if (tag.field === 1 && tag.wire === WIRE_LEN) rangeMin = readHeartRateValue(sub.subReader());
+        else if (tag.field === 2 && tag.wire === WIRE_LEN) rangeMax = readHeartRateValue(sub.subReader());
+        else sub.skip(tag.wire);
+      }
+    } else {
+      r.skip(wire);
+    }
+  }
+
+  if (targetKind === ALERT_TARGET_KIND.zone && zone !== undefined) {
+    return { type: "heartRateZone", zone };
+  }
+  if (targetKind === ALERT_TARGET_KIND.range && rangeMin && rangeMax) {
+    return { type: "heartRateRange", min: rangeMin, max: rangeMax };
+  }
+  throw new Error(`heartRateAlert: unsupported target combination (kind=${targetKind}, type=${targetType})`);
+}
+
+function readPowerAlert(
+  r: Reader,
+  targetKind: number,
+  targetType: number,
+): AlertJson {
+  let threshold: Quantity<PowerUnit> | undefined;
+  let rangeMin: Quantity<PowerUnit> | undefined;
+  let rangeMax: Quantity<PowerUnit> | undefined;
+  let zone: number | undefined;
+
+  while (!r.eof()) {
+    const { field, wire } = r.tag();
+    if (field === 1 && wire === WIRE_LEN) {
+      threshold = readPowerValue(r.subReader());
+    } else if (field === 2 && wire === WIRE_LEN) {
+      const sub = r.subReader();
+      while (!sub.eof()) {
+        const tag = sub.tag();
+        if (tag.field === 1 && tag.wire === WIRE_LEN) rangeMin = readPowerValue(sub.subReader());
+        else if (tag.field === 2 && tag.wire === WIRE_LEN) rangeMax = readPowerValue(sub.subReader());
+        else sub.skip(tag.wire);
+      }
+    } else if (field === 3 && wire === WIRE_LEN) {
+      zone = zoneValue(r.subReader());
+    } else {
+      r.skip(wire);
+    }
+  }
+
+  const metric: AlertMetric | undefined =
+    targetType === ALERT_TARGET_TYPE.averagePower ? "average" : undefined;
+
+  if (targetKind === ALERT_TARGET_KIND.zone && zone !== undefined) {
+    return { type: "powerZone", zone };
+  }
+  if (targetKind === ALERT_TARGET_KIND.range && rangeMin && rangeMax) {
+    const out: Extract<AlertJson, { type: "powerRange" }> = {
+      type: "powerRange",
+      min: rangeMin,
+      max: rangeMax,
+    };
+    if (metric) out.metric = metric;
+    return out;
+  }
+  if (targetKind === ALERT_TARGET_KIND.value && threshold) {
+    const out: Extract<AlertJson, { type: "powerThreshold" }> = {
+      type: "powerThreshold",
+      threshold,
+    };
+    if (metric) out.metric = metric;
+    return out;
+  }
+  throw new Error(`powerAlert: unsupported target combination (kind=${targetKind}, type=${targetType})`);
+}
+
+function readSpeedAlert(
+  r: Reader,
+  targetKind: number,
+  targetType: number,
+): AlertJson {
+  let threshold: SpeedJson | undefined;
+  let rangeMin: SpeedJson | undefined;
+  let rangeMax: SpeedJson | undefined;
+
+  while (!r.eof()) {
+    const { field, wire } = r.tag();
+    if (field === 1 && wire === WIRE_LEN) {
+      threshold = readSpeedValue(r.subReader());
+    } else if (field === 2 && wire === WIRE_LEN) {
+      const sub = r.subReader();
+      while (!sub.eof()) {
+        const tag = sub.tag();
+        if (tag.field === 1 && tag.wire === WIRE_LEN) rangeMin = readSpeedValue(sub.subReader());
+        else if (tag.field === 2 && tag.wire === WIRE_LEN) rangeMax = readSpeedValue(sub.subReader());
+        else sub.skip(tag.wire);
+      }
+    } else {
+      r.skip(wire);
+    }
+  }
+
+  const metric: AlertMetric | undefined =
+    targetType === ALERT_TARGET_TYPE.averageSpeed ? "average" : undefined;
+
+  if (targetKind === ALERT_TARGET_KIND.range && rangeMin && rangeMax) {
+    const out: Extract<AlertJson, { type: "speedRange" }> = {
+      type: "speedRange",
+      min: rangeMin,
+      max: rangeMax,
+    };
+    if (metric) out.metric = metric;
+    return out;
+  }
+  if (targetKind === ALERT_TARGET_KIND.value && threshold) {
+    const out: Extract<AlertJson, { type: "speedThreshold" }> = {
+      type: "speedThreshold",
+      threshold,
+    };
+    if (metric) out.metric = metric;
+    return out;
+  }
+  throw new Error(`speedAlert: unsupported target combination (kind=${targetKind}, type=${targetType})`);
+}
+
+function readCadenceAlert(
+  r: Reader,
+  targetKind: number,
+  targetType: number,
+): AlertJson {
+  let threshold: Quantity<CadenceUnit> | undefined;
+  let rangeMin: Quantity<CadenceUnit> | undefined;
+  let rangeMax: Quantity<CadenceUnit> | undefined;
+
+  while (!r.eof()) {
+    const { field, wire } = r.tag();
+    if (field === 1 && wire === WIRE_LEN) {
+      threshold = readCadenceValue(r.subReader());
+    } else if (field === 2 && wire === WIRE_LEN) {
+      const sub = r.subReader();
+      while (!sub.eof()) {
+        const tag = sub.tag();
+        if (tag.field === 1 && tag.wire === WIRE_LEN) rangeMin = readCadenceValue(sub.subReader());
+        else if (tag.field === 2 && tag.wire === WIRE_LEN) rangeMax = readCadenceValue(sub.subReader());
+        else sub.skip(tag.wire);
+      }
+    } else {
+      r.skip(wire);
+    }
+  }
+
+  if (targetKind === ALERT_TARGET_KIND.range && rangeMin && rangeMax) {
+    return { type: "cadenceRange", min: rangeMin, max: rangeMax };
+  }
+  if (targetKind === ALERT_TARGET_KIND.value && threshold) {
+    return { type: "cadenceThreshold", threshold };
+  }
+  throw new Error(`cadenceAlert: unsupported target combination (kind=${targetKind}, type=${targetType})`);
+}
+
+function readAlert(r: Reader): AlertJson {
+  let targetType = 0;
+  let targetKind = 0;
+  let speedSub: Uint8Array | undefined;
+  let cadenceSub: Uint8Array | undefined;
+  let powerSub: Uint8Array | undefined;
+  let heartRateSub: Uint8Array | undefined;
+
+  while (!r.eof()) {
+    const { field, wire } = r.tag();
+    if (field === 1 && wire === WIRE_VARINT) targetType = r.uint32();
+    else if (field === 2 && wire === WIRE_VARINT) targetKind = r.uint32();
+    else if (field === 4 && wire === WIRE_LEN) speedSub = r.lenDelimited();
+    else if (field === 5 && wire === WIRE_LEN) cadenceSub = r.lenDelimited();
+    else if (field === 6 && wire === WIRE_LEN) powerSub = r.lenDelimited();
+    else if (field === 7 && wire === WIRE_LEN) heartRateSub = r.lenDelimited();
+    else r.skip(wire);
+  }
+
+  if (heartRateSub) return readHeartRateAlert(new Reader(heartRateSub), targetKind, targetType);
+  if (powerSub)     return readPowerAlert(new Reader(powerSub), targetKind, targetType);
+  if (speedSub)     return readSpeedAlert(new Reader(speedSub), targetKind, targetType);
+  if (cadenceSub)   return readCadenceAlert(new Reader(cadenceSub), targetKind, targetType);
+
+  throw new Error("alert: no per-metric sub-message set");
+}
+
 function readStep(r: Reader): StepJson {
   let goal: GoalJson | undefined;
+  let alert: AlertJson | undefined;
   let displayName: string | undefined;
   while (!r.eof()) {
     const { field, wire } = r.tag();
     if (field === 1 && wire === WIRE_LEN) goal = readGoal(r.subReader());
+    else if (field === 2 && wire === WIRE_LEN) alert = readAlert(r.subReader());
     else if (field === 3 && wire === WIRE_LEN) displayName = r.string();
     else r.skip(wire);
   }
   if (!goal) throw new Error("step: missing goal");
   const out: StepJson = { goal };
+  if (alert) out.alert = alert;
   if (displayName !== undefined && displayName !== "") out.displayName = displayName;
   return out;
 }

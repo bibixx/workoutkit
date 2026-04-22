@@ -97,8 +97,22 @@ export type SwimmingLocation = "unknown" | "pool" | "openWater";
 export type LengthUnit = "meters" | "kilometers" | "feet" | "yards" | "miles";
 export type DurationUnit = "seconds" | "minutes" | "hours";
 export type EnergyUnit = "kilocalories" | "kilojoules";
+export type PowerUnit = "watts" | "kilowatts";
+export type HeartRateUnit = "beatsPerMinute";
+export type CadenceUnit = "countPerMinute";
 
 export type Quantity<U extends string> = { value: number; unit: U };
+
+// Speed is stored on the wire as a (distance, time) pair, which covers both
+// speed semantics (m/s) and pace semantics (min/mile) without lossy conversion.
+export type SpeedJson = {
+  distance: Quantity<LengthUnit>;
+  time: Quantity<DurationUnit>;
+};
+
+// Power and speed alerts can target either instantaneous or average metric;
+// heart-rate and cadence alerts are always "current" on Apple's API surface.
+export type AlertMetric = "current" | "average";
 
 export type GoalJson =
   | { type: "open" }
@@ -113,9 +127,47 @@ export type GoalJson =
       };
     };
 
+export type AlertJson =
+  | { type: "heartRateZone"; zone: number }
+  | {
+      type: "heartRateRange";
+      min: Quantity<HeartRateUnit>;
+      max: Quantity<HeartRateUnit>;
+    }
+  | { type: "powerZone"; zone: number }
+  | {
+      type: "powerRange";
+      min: Quantity<PowerUnit>;
+      max: Quantity<PowerUnit>;
+      metric?: AlertMetric;
+    }
+  | {
+      type: "powerThreshold";
+      threshold: Quantity<PowerUnit>;
+      metric?: AlertMetric;
+    }
+  | {
+      type: "speedRange";
+      min: SpeedJson;
+      max: SpeedJson;
+      metric?: AlertMetric;
+    }
+  | {
+      type: "speedThreshold";
+      threshold: SpeedJson;
+      metric?: AlertMetric;
+    }
+  | { type: "cadenceThreshold"; threshold: Quantity<CadenceUnit> }
+  | {
+      type: "cadenceRange";
+      min: Quantity<CadenceUnit>;
+      max: Quantity<CadenceUnit>;
+    };
+
 export type StepJson = {
   displayName?: string;
   goal: GoalJson;
+  alert?: AlertJson;
 };
 
 export type Purpose = "work" | "recovery";
