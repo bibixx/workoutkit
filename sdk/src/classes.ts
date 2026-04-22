@@ -1,6 +1,16 @@
-import { Distance, Duration, Energy } from "./quantities.ts";
+import {
+  Cadence,
+  Distance,
+  Duration,
+  Energy,
+  HeartRate,
+  Power,
+  Speed,
+} from "./quantities.ts";
 import type {
   ActivityName,
+  AlertJson,
+  AlertMetric,
   CustomWorkoutJson,
   GoalJson,
   IntervalBlockJson,
@@ -88,24 +98,199 @@ export class PoolSwimDistanceWithTimeGoal extends Goal {
   }
 }
 
+// ---- Alerts -------------------------------------------------------------
+
+export abstract class Alert {
+  abstract toJSON(): AlertJson;
+
+  static fromJson(json: AlertJson): Alert {
+    switch (json.type) {
+      case "heartRateZone":
+        return new HeartRateZoneAlert(json.zone);
+      case "heartRateRange":
+        return new HeartRateRangeAlert(
+          HeartRate.fromJson(json.min),
+          HeartRate.fromJson(json.max),
+        );
+      case "powerZone":
+        return new PowerZoneAlert(json.zone);
+      case "powerRange":
+        return new PowerRangeAlert(
+          Power.fromJson(json.min),
+          Power.fromJson(json.max),
+          json.metric,
+        );
+      case "powerThreshold":
+        return new PowerThresholdAlert(
+          Power.fromJson(json.threshold),
+          json.metric,
+        );
+      case "speedRange":
+        return new SpeedRangeAlert(
+          Speed.fromJson(json.min),
+          Speed.fromJson(json.max),
+          json.metric,
+        );
+      case "speedThreshold":
+        return new SpeedThresholdAlert(
+          Speed.fromJson(json.threshold),
+          json.metric,
+        );
+      case "cadenceThreshold":
+        return new CadenceThresholdAlert(Cadence.fromJson(json.threshold));
+      case "cadenceRange":
+        return new CadenceRangeAlert(
+          Cadence.fromJson(json.min),
+          Cadence.fromJson(json.max),
+        );
+    }
+  }
+}
+
+export class HeartRateZoneAlert extends Alert {
+  constructor(public zone: number) {
+    super();
+  }
+  toJSON(): AlertJson {
+    return { type: "heartRateZone", zone: this.zone };
+  }
+}
+
+export class HeartRateRangeAlert extends Alert {
+  constructor(public min: HeartRate, public max: HeartRate) {
+    super();
+  }
+  toJSON(): AlertJson {
+    return {
+      type: "heartRateRange",
+      min: this.min.toJSON(),
+      max: this.max.toJSON(),
+    };
+  }
+}
+
+export class PowerZoneAlert extends Alert {
+  constructor(public zone: number) {
+    super();
+  }
+  toJSON(): AlertJson {
+    return { type: "powerZone", zone: this.zone };
+  }
+}
+
+export class PowerRangeAlert extends Alert {
+  constructor(
+    public min: Power,
+    public max: Power,
+    public metric?: AlertMetric,
+  ) {
+    super();
+  }
+  toJSON(): AlertJson {
+    const out: Extract<AlertJson, { type: "powerRange" }> = {
+      type: "powerRange",
+      min: this.min.toJSON(),
+      max: this.max.toJSON(),
+    };
+    if (this.metric) out.metric = this.metric;
+    return out;
+  }
+}
+
+export class PowerThresholdAlert extends Alert {
+  constructor(public threshold: Power, public metric?: AlertMetric) {
+    super();
+  }
+  toJSON(): AlertJson {
+    const out: Extract<AlertJson, { type: "powerThreshold" }> = {
+      type: "powerThreshold",
+      threshold: this.threshold.toJSON(),
+    };
+    if (this.metric) out.metric = this.metric;
+    return out;
+  }
+}
+
+export class SpeedRangeAlert extends Alert {
+  constructor(
+    public min: Speed,
+    public max: Speed,
+    public metric?: AlertMetric,
+  ) {
+    super();
+  }
+  toJSON(): AlertJson {
+    const out: Extract<AlertJson, { type: "speedRange" }> = {
+      type: "speedRange",
+      min: this.min.toJSON(),
+      max: this.max.toJSON(),
+    };
+    if (this.metric) out.metric = this.metric;
+    return out;
+  }
+}
+
+export class SpeedThresholdAlert extends Alert {
+  constructor(public threshold: Speed, public metric?: AlertMetric) {
+    super();
+  }
+  toJSON(): AlertJson {
+    const out: Extract<AlertJson, { type: "speedThreshold" }> = {
+      type: "speedThreshold",
+      threshold: this.threshold.toJSON(),
+    };
+    if (this.metric) out.metric = this.metric;
+    return out;
+  }
+}
+
+export class CadenceThresholdAlert extends Alert {
+  constructor(public threshold: Cadence) {
+    super();
+  }
+  toJSON(): AlertJson {
+    return { type: "cadenceThreshold", threshold: this.threshold.toJSON() };
+  }
+}
+
+export class CadenceRangeAlert extends Alert {
+  constructor(public min: Cadence, public max: Cadence) {
+    super();
+  }
+  toJSON(): AlertJson {
+    return {
+      type: "cadenceRange",
+      min: this.min.toJSON(),
+      max: this.max.toJSON(),
+    };
+  }
+}
+
 // ---- Step / IntervalStep / IntervalBlock --------------------------------
 
 export class Step {
   displayName?: string;
   goal: Goal;
+  alert?: Alert;
 
-  constructor(goal: Goal, displayName?: string) {
+  constructor(goal: Goal, displayName?: string, alert?: Alert) {
     this.goal = goal;
     this.displayName = displayName;
+    this.alert = alert;
   }
 
   static fromJson(json: StepJson): Step {
-    return new Step(Goal.fromJson(json.goal), json.displayName);
+    return new Step(
+      Goal.fromJson(json.goal),
+      json.displayName,
+      json.alert ? Alert.fromJson(json.alert) : undefined,
+    );
   }
 
   toJSON(): StepJson {
     const out: StepJson = { goal: this.goal.toJSON() };
     if (this.displayName !== undefined) out.displayName = this.displayName;
+    if (this.alert) out.alert = this.alert.toJSON();
     return out;
   }
 }
@@ -136,8 +321,13 @@ export class IntervalBlock {
     this.iterations = iterations;
   }
 
-  addStep(purpose: Purpose, goal: Goal, displayName?: string): IntervalStep {
-    const s = new IntervalStep(purpose, new Step(goal, displayName));
+  addStep(
+    purpose: Purpose,
+    goal: Goal,
+    displayName?: string,
+    alert?: Alert,
+  ): IntervalStep {
+    const s = new IntervalStep(purpose, new Step(goal, displayName, alert));
     this.steps.push(s);
     return s;
   }
