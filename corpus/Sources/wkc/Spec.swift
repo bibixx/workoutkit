@@ -60,6 +60,79 @@ struct IntervalStepSpec: Decodable {
 struct StepSpec: Decodable {
     let displayName: String?
     let goal: GoalSpec
+    let alert: AlertSpec?
+}
+
+enum AlertSpec: Decodable, Equatable {
+    case heartRateZone(zone: Int)
+    case heartRateRange(min: Quantity, max: Quantity)
+    case powerZone(zone: Int, metric: String?)
+    case powerRange(min: Quantity, max: Quantity, metric: String?)
+    case powerThreshold(threshold: Quantity, metric: String?)
+    case speedRange(min: Quantity, max: Quantity, metric: String?)
+    case speedThreshold(threshold: Quantity, metric: String?)
+    case cadenceThreshold(threshold: Quantity)
+    case cadenceRange(min: Quantity, max: Quantity)
+
+    struct Quantity: Decodable, Equatable { let value: Double; let unit: String }
+
+    private enum Key: String, CodingKey {
+        case type, zone, min, max, threshold, metric
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: Key.self)
+        let kind = try c.decode(String.self, forKey: .type)
+        switch kind {
+        case "heartRateZone":
+            self = .heartRateZone(zone: try c.decode(Int.self, forKey: .zone))
+        case "heartRateRange":
+            self = .heartRateRange(
+                min: try c.decode(Quantity.self, forKey: .min),
+                max: try c.decode(Quantity.self, forKey: .max)
+            )
+        case "powerZone":
+            self = .powerZone(
+                zone: try c.decode(Int.self, forKey: .zone),
+                metric: try c.decodeIfPresent(String.self, forKey: .metric)
+            )
+        case "powerRange":
+            self = .powerRange(
+                min: try c.decode(Quantity.self, forKey: .min),
+                max: try c.decode(Quantity.self, forKey: .max),
+                metric: try c.decodeIfPresent(String.self, forKey: .metric)
+            )
+        case "powerThreshold":
+            self = .powerThreshold(
+                threshold: try c.decode(Quantity.self, forKey: .threshold),
+                metric: try c.decodeIfPresent(String.self, forKey: .metric)
+            )
+        case "speedRange":
+            self = .speedRange(
+                min: try c.decode(Quantity.self, forKey: .min),
+                max: try c.decode(Quantity.self, forKey: .max),
+                metric: try c.decodeIfPresent(String.self, forKey: .metric)
+            )
+        case "speedThreshold":
+            self = .speedThreshold(
+                threshold: try c.decode(Quantity.self, forKey: .threshold),
+                metric: try c.decodeIfPresent(String.self, forKey: .metric)
+            )
+        case "cadenceThreshold":
+            self = .cadenceThreshold(
+                threshold: try c.decode(Quantity.self, forKey: .threshold)
+            )
+        case "cadenceRange":
+            self = .cadenceRange(
+                min: try c.decode(Quantity.self, forKey: .min),
+                max: try c.decode(Quantity.self, forKey: .max)
+            )
+        default:
+            throw DecodingError.dataCorruptedError(
+                forKey: .type, in: c,
+                debugDescription: "unknown alert type: \(kind)")
+        }
+    }
 }
 
 enum GoalSpec: Decodable, Equatable {

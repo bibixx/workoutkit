@@ -192,7 +192,103 @@ func buildGoal(_ s: GoalSpec) throws -> WorkoutGoal {
 }
 
 func buildStep(_ s: StepSpec) throws -> WorkoutStep {
-    WorkoutStep(goal: try buildGoal(s.goal), alert: nil, displayName: s.displayName)
+    WorkoutStep(
+        goal: try buildGoal(s.goal),
+        alert: try s.alert.map(buildAlert),
+        displayName: s.displayName
+    )
+}
+
+// MARK: - Alerts
+
+enum AlertBuildError: Error, CustomStringConvertible {
+    case unknownMetric(String)
+    case unknownUnit(String, String)
+
+    var description: String {
+        switch self {
+        case .unknownMetric(let s):      return "unknown alert metric: \(s)"
+        case .unknownUnit(let kind, let s): return "unknown \(kind) unit: \(s)"
+        }
+    }
+}
+
+private func powerUnit(_ s: String) throws -> UnitPower {
+    switch s {
+    case "watts":      return .watts
+    case "kilowatts":  return .kilowatts
+    default: throw AlertBuildError.unknownUnit("power", s)
+    }
+}
+
+private func speedUnit(_ s: String) throws -> UnitSpeed {
+    switch s {
+    case "metersPerSecond":     return .metersPerSecond
+    case "kilometersPerHour":   return .kilometersPerHour
+    case "milesPerHour":        return .milesPerHour
+    default: throw AlertBuildError.unknownUnit("speed", s)
+    }
+}
+
+// WorkoutKit's canonical frequency unit for cadence / heart-rate.
+private let countsPerMinute: UnitFrequency = WorkoutAlertMetric.countPerMinute
+
+private func frequencyUnit(_ s: String) throws -> UnitFrequency {
+    switch s {
+    case "hertz":            return .hertz
+    case "beatsPerMinute":   return countsPerMinute
+    case "stepsPerMinute":   return countsPerMinute
+    case "countPerMinute":   return countsPerMinute
+    default: throw AlertBuildError.unknownUnit("frequency", s)
+    }
+}
+
+private func metric(_ s: String?) throws -> WorkoutAlertMetric {
+    switch s {
+    case nil, "current": return .current
+    case "average":      return .average
+    case let .some(x):   throw AlertBuildError.unknownMetric(x)
+    }
+}
+
+func buildAlert(_ s: AlertSpec) throws -> any WorkoutAlert {
+    switch s {
+    case .heartRateZone(let zone):
+        return HeartRateZoneAlert(zone: zone)
+    case .heartRateRange(let lo, let hi):
+        let u = try frequencyUnit(lo.unit)
+        let range = Measurement(value: lo.value, unit: u)
+            ... Measurement(value: hi.value, unit: try frequencyUnit(hi.unit))
+        return HeartRateRangeAlert(target: range)
+    case .powerZone(let zone, _):
+        return PowerZoneAlert(zone: zone)
+    case .powerRange(let lo, let hi, let m):
+        let range = Measurement(value: lo.value, unit: try powerUnit(lo.unit))
+            ... Measurement(value: hi.value, unit: try powerUnit(hi.unit))
+        return PowerRangeAlert(target: range, metric: try metric(m))
+    case .powerThreshold(let q, let m):
+        return PowerThresholdAlert(
+            target: Measurement(value: q.value, unit: try powerUnit(q.unit)),
+            metric: try metric(m)
+        )
+    case .speedRange(let lo, let hi, let m):
+        let range = Measurement(value: lo.value, unit: try speedUnit(lo.unit))
+            ... Measurement(value: hi.value, unit: try speedUnit(hi.unit))
+        return SpeedRangeAlert(target: range, metric: try metric(m))
+    case .speedThreshold(let q, let m):
+        return SpeedThresholdAlert(
+            target: Measurement(value: q.value, unit: try speedUnit(q.unit)),
+            metric: try metric(m)
+        )
+    case .cadenceThreshold(let q):
+        return CadenceThresholdAlert(
+            target: Measurement(value: q.value, unit: try frequencyUnit(q.unit))
+        )
+    case .cadenceRange(let lo, let hi):
+        let range = Measurement(value: lo.value, unit: try frequencyUnit(lo.unit))
+            ... Measurement(value: hi.value, unit: try frequencyUnit(hi.unit))
+        return CadenceRangeAlert(target: range)
+    }
 }
 
 func buildBlock(_ s: BlockSpec) throws -> IntervalBlock {

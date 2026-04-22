@@ -10,3 +10,4 @@ sdk/README.md
 sdk/LICENSE
 .DS_Store
 artifacts/*.swiftinterface
+tmp/
