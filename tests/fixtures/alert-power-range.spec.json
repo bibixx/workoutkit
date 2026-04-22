@@ -1,0 +1,26 @@
+{
+  "referenceId": "aaaaaaaa-0000-4000-8000-000000000004",
+  "custom": {
+    "activity": "cycling",
+    "location": "outdoor",
+    "displayName": "Power-range test",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": { "type": "open" },
+              "alert": {
+                "type": "powerRange",
+                "min": { "value": 200, "unit": "watts" },
+                "max": { "value": 250, "unit": "watts" }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

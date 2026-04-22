@@ -1,0 +1,32 @@
+{
+  "referenceId": "aaaaaaaa-0000-4000-8000-000000000006",
+  "custom": {
+    "activity": "running",
+    "location": "outdoor",
+    "displayName": "Speed-range test",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": { "type": "open" },
+              "alert": {
+                "type": "speedRange",
+                "min": {
+                  "distance": { "value": 3, "unit": "meters" },
+                  "time": { "value": 1, "unit": "seconds" }
+                },
+                "max": {
+                  "distance": { "value": 4, "unit": "meters" },
+                  "time": { "value": 1, "unit": "seconds" }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

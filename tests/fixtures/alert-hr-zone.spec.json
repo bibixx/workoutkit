@@ -1,0 +1,22 @@
+{
+  "referenceId": "aaaaaaaa-0000-4000-8000-000000000001",
+  "custom": {
+    "activity": "running",
+    "location": "outdoor",
+    "displayName": "HR-zone test",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": { "type": "open" },
+              "alert": { "type": "heartRateZone", "zone": 3 }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

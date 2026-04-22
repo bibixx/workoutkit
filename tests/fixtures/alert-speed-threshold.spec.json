@@ -1,0 +1,28 @@
+{
+  "referenceId": "aaaaaaaa-0000-4000-8000-000000000007",
+  "custom": {
+    "activity": "running",
+    "location": "outdoor",
+    "displayName": "Speed-threshold test",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": { "type": "open" },
+              "alert": {
+                "type": "speedThreshold",
+                "threshold": {
+                  "distance": { "value": 3.5, "unit": "meters" },
+                  "time": { "value": 1, "unit": "seconds" }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

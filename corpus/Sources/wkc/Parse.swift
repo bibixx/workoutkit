@@ -13,8 +13,8 @@ enum ParseError: Error, CustomStringConvertible {
     case unsupportedDurationUnit(String)
     case unsupportedEnergyUnit(String)
     case unsupportedGoal(String)
+    case unsupportedAlert(String)
     case unsupportedWorkoutVariant(String)
-    case alertsNotSupported
 
     var description: String {
         switch self {
@@ -25,8 +25,8 @@ enum ParseError: Error, CustomStringConvertible {
         case .unsupportedDurationUnit(let s):    return "unsupported duration unit: \(s)"
         case .unsupportedEnergyUnit(let s):      return "unsupported energy unit: \(s)"
         case .unsupportedGoal(let s):            return "unsupported goal: \(s)"
+        case .unsupportedAlert(let s):           return "unsupported alert: \(s)"
         case .unsupportedWorkoutVariant(let s):  return "unsupported workout variant: \(s)"
-        case .alertsNotSupported:                return "alerts not yet supported by the SDK"
         }
     }
 }
@@ -166,6 +166,56 @@ struct OutIntervalStep: Encodable {
 struct OutStep: Encodable {
     let displayName: String?
     let goal: OutGoal
+    let alert: OutAlert?
+}
+
+struct OutAlert: Encodable {
+    let type: String
+    let zone: Int?
+    let threshold: JSON?
+    let min: JSON?
+    let max: JSON?
+    let metric: String?
+
+    enum Key: String, CodingKey {
+        case type, zone, threshold, min, max, metric
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: Key.self)
+        try c.encode(type, forKey: .type)
+        try c.encodeIfPresent(zone, forKey: .zone)
+        try c.encodeIfPresent(threshold, forKey: .threshold)
+        try c.encodeIfPresent(min, forKey: .min)
+        try c.encodeIfPresent(max, forKey: .max)
+        try c.encodeIfPresent(metric, forKey: .metric)
+    }
+}
+
+// Minimal dynamic-JSON value for alert targets (quantity vs. speed-pair).
+indirect enum JSON: Encodable {
+    case quantity(value: Double, unit: String)
+    case pair(distance: JSON, time: JSON)
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: DynamicKey.self)
+        switch self {
+        case .quantity(let v, let u):
+            try c.encode(v, forKey: DynamicKey("value")!)
+            try c.encode(u, forKey: DynamicKey("unit")!)
+        case .pair(let d, let t):
+            try c.encode(d, forKey: DynamicKey("distance")!)
+            try c.encode(t, forKey: DynamicKey("time")!)
+        }
+    }
+
+    struct DynamicKey: CodingKey {
+        var stringValue: String
+        var intValue: Int? { nil }
+        init?(stringValue: String) { self.stringValue = stringValue }
+        init?(intValue: Int) { return nil }
+        init?(_ s: String) { self.stringValue = s }
+    }
 }
 
 struct OutQuantity: Encodable { let value: Double; let unit: String }
@@ -233,9 +283,128 @@ private func out(_ goal: WorkoutGoal) throws -> OutGoal {
     }
 }
 
+private func metricName(_ m: WorkoutAlertMetric) -> String? {
+    switch m {
+    case .average: return "average"
+    case .current: return nil
+    @unknown default: return nil
+    }
+}
+
+private func powerUnitName(_ u: UnitPower) throws -> String {
+    switch u {
+    case .watts:     return "watts"
+    case .kilowatts: return "kilowatts"
+    default: throw ParseError.unsupportedAlert("power unit \(u.symbol)")
+    }
+}
+
+private func speedJson(_ m: Measurement<UnitSpeed>) throws -> JSON {
+    // Apple hands us a Measurement<UnitSpeed>; the wire stores (distance, time).
+    // Represent as "value m per 1 s" when the unit is m/s, otherwise split into
+    // the user's unit over a unit time so the JSON mirrors Apple's pair shape.
+    let unit = try speedUnitName(m.unit)
+    return .pair(
+        distance: .quantity(value: m.value, unit: unit.distance),
+        time: .quantity(value: 1, unit: unit.time)
+    )
+}
+
+private func speedUnitName(_ u: UnitSpeed) throws -> (distance: String, time: String) {
+    switch u {
+    case .metersPerSecond:    return ("meters", "seconds")
+    case .kilometersPerHour:  return ("kilometers", "hours")
+    case .milesPerHour:       return ("miles", "hours")
+    default: throw ParseError.unsupportedAlert("speed unit \(u.symbol)")
+    }
+}
+
+private func cadenceJson(_ m: Measurement<UnitFrequency>) -> JSON {
+    // Oracle only hands back WorkoutAlertMetric.countPerMinute; normalise to
+    // the spec's "countPerMinute" shape regardless of which frequency unit
+    // WorkoutKit exposes.
+    let cpm = m.converted(to: WorkoutAlertMetric.countPerMinute).value
+    return .quantity(value: cpm, unit: "countPerMinute")
+}
+
+private func heartRateJson(_ m: Measurement<UnitFrequency>) -> JSON {
+    let bpm = m.converted(to: WorkoutAlertMetric.countPerMinute).value
+    return .quantity(value: bpm, unit: "beatsPerMinute")
+}
+
+private func out(_ alert: any WorkoutAlert) throws -> OutAlert {
+    switch alert {
+    case let a as HeartRateZoneAlert:
+        return OutAlert(type: "heartRateZone", zone: a.zone, threshold: nil, min: nil, max: nil, metric: nil)
+    case let a as HeartRateRangeAlert:
+        return OutAlert(
+            type: "heartRateRange",
+            zone: nil, threshold: nil,
+            min: heartRateJson(a.target.lowerBound),
+            max: heartRateJson(a.target.upperBound),
+            metric: nil
+        )
+    case let a as PowerZoneAlert:
+        return OutAlert(type: "powerZone", zone: a.zone, threshold: nil, min: nil, max: nil, metric: nil)
+    case let a as PowerRangeAlert:
+        return OutAlert(
+            type: "powerRange",
+            zone: nil, threshold: nil,
+            min: .quantity(value: a.target.lowerBound.value, unit: try powerUnitName(a.target.lowerBound.unit)),
+            max: .quantity(value: a.target.upperBound.value, unit: try powerUnitName(a.target.upperBound.unit)),
+            metric: metricName(a.metric)
+        )
+    case let a as PowerThresholdAlert:
+        return OutAlert(
+            type: "powerThreshold",
+            zone: nil,
+            threshold: .quantity(value: a.target.value, unit: try powerUnitName(a.target.unit)),
+            min: nil, max: nil,
+            metric: metricName(a.metric)
+        )
+    case let a as SpeedRangeAlert:
+        return OutAlert(
+            type: "speedRange",
+            zone: nil, threshold: nil,
+            min: try speedJson(a.target.lowerBound),
+            max: try speedJson(a.target.upperBound),
+            metric: metricName(a.metric)
+        )
+    case let a as SpeedThresholdAlert:
+        return OutAlert(
+            type: "speedThreshold",
+            zone: nil,
+            threshold: try speedJson(a.target),
+            min: nil, max: nil,
+            metric: metricName(a.metric)
+        )
+    case let a as CadenceThresholdAlert:
+        return OutAlert(
+            type: "cadenceThreshold",
+            zone: nil,
+            threshold: cadenceJson(a.target),
+            min: nil, max: nil,
+            metric: nil
+        )
+    case let a as CadenceRangeAlert:
+        return OutAlert(
+            type: "cadenceRange",
+            zone: nil, threshold: nil,
+            min: cadenceJson(a.target.lowerBound),
+            max: cadenceJson(a.target.upperBound),
+            metric: nil
+        )
+    default:
+        throw ParseError.unsupportedAlert("\(type(of: alert))")
+    }
+}
+
 private func out(_ step: WorkoutStep) throws -> OutStep {
-    if step.alert != nil { throw ParseError.alertsNotSupported }
-    return OutStep(displayName: step.displayName, goal: try out(step.goal))
+    OutStep(
+        displayName: step.displayName,
+        goal: try out(step.goal),
+        alert: try step.alert.map(out)
+    )
 }
 
 private func out(_ is_: IntervalStep) throws -> OutIntervalStep {

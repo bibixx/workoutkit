@@ -1,0 +1,22 @@
+{
+  "referenceId": "aaaaaaaa-0000-4000-8000-000000000003",
+  "custom": {
+    "activity": "cycling",
+    "location": "outdoor",
+    "displayName": "Power-zone test",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": { "type": "open" },
+              "alert": { "type": "powerZone", "zone": 4 }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

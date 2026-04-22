@@ -1,0 +1,25 @@
+{
+  "referenceId": "aaaaaaaa-0000-4000-8000-000000000008",
+  "custom": {
+    "activity": "cycling",
+    "location": "outdoor",
+    "displayName": "Cadence-threshold test",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": { "type": "open" },
+              "alert": {
+                "type": "cadenceThreshold",
+                "threshold": { "value": 85, "unit": "countPerMinute" }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

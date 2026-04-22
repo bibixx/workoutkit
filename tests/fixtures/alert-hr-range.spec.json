@@ -1,0 +1,26 @@
+{
+  "referenceId": "aaaaaaaa-0000-4000-8000-000000000002",
+  "custom": {
+    "activity": "cycling",
+    "location": "outdoor",
+    "displayName": "HR-range test",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": { "type": "open" },
+              "alert": {
+                "type": "heartRateRange",
+                "min": { "value": 140, "unit": "beatsPerMinute" },
+                "max": { "value": 160, "unit": "beatsPerMinute" }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

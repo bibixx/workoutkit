@@ -1,0 +1,26 @@
+{
+  "referenceId": "aaaaaaaa-0000-4000-8000-000000000005",
+  "custom": {
+    "activity": "cycling",
+    "location": "outdoor",
+    "displayName": "Avg-power threshold test",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": { "type": "open" },
+              "alert": {
+                "type": "powerThreshold",
+                "threshold": { "value": 225, "unit": "watts" },
+                "metric": "average"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "referenceId": "aaaaaaaa-0000-4000-8000-000000000009",
+  "custom": {
+    "activity": "cycling",
+    "location": "outdoor",
+    "displayName": "Cadence-range test",
+    "blocks": [
+      {
+        "iterations": 1,
+        "steps": [
+          {
+            "purpose": "work",
+            "step": {
+              "goal": { "type": "open" },
+              "alert": {
+                "type": "cadenceRange",
+                "min": { "value": 80, "unit": "countPerMinute" },
+                "max": { "value": 100, "unit": "countPerMinute" }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

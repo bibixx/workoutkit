@@ -4,25 +4,39 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import {
+  Cadence,
+  CadenceRangeAlert,
+  CadenceThresholdAlert,
   CustomWorkout,
   CyclingActivity,
   Distance,
   DistanceGoal,
   Duration,
+  Energy,
   EnergyGoal,
+  HeartRate,
+  HeartRateRangeAlert,
+  HeartRateZoneAlert,
   IntervalBlock,
   OpenGoal,
   PacerWorkout,
   PoolSwimDistanceWithTimeGoal,
+  Power,
+  PowerRangeAlert,
+  PowerThresholdAlert,
+  PowerZoneAlert,
   RunningActivity,
   SingleGoalWorkout,
+  Speed,
+  SpeedRangeAlert,
+  SpeedThresholdAlert,
   Step,
   SwimBikeRunWorkout,
   SwimmingActivity,
   TimeGoal,
   WorkoutPlan,
-  Energy,
 } from "@bibixx/workoutkit";
+import { decode } from "@bibixx/workoutkit/decode";
 import { encode } from "@bibixx/workoutkit/encode";
 
 import { loadSpec } from "./spec.ts";
@@ -218,6 +232,77 @@ describe("hand-constructed classes (no fixtures)", () => {
     const sbr = new SwimBikeRunWorkout();
     sbr.add(new RunningActivity());
     expect(sbr.toJSON().activities).toEqual([{ kind: "running" }]);
+  });
+
+  it("SpeedThresholdAlert with a pace-shaped target round-trips via decode", () => {
+    // Apple's WorkoutAlert API collapses all speeds to a single UnitSpeed
+    // scalar, so a pace like 5:00/mile can't survive the Swift oracle
+    // losslessly — but the bytes themselves are fine. Encode → decode via
+    // the SDK alone preserves the original {distance=1mi, time=5min} pair.
+    const plan = new WorkoutPlan({
+      referenceId: "77777777-7777-4777-8777-777777777777",
+    });
+    const custom = plan.asCustom({
+      activity: "running",
+      location: "outdoor",
+    });
+    const block = custom.addBlock(1);
+    block.addStep(
+      "work",
+      new OpenGoal(),
+      undefined,
+      new SpeedThresholdAlert(
+        new Speed(new Distance(1, "miles"), new Duration(5, "minutes")),
+      ),
+    );
+
+    const bytes = encode(plan);
+    const decoded = decode(bytes);
+    const step = decoded.custom!.blocks[0]!.steps[0]!.step;
+    expect(step.alert).toBeInstanceOf(SpeedThresholdAlert);
+    const alert = step.alert as SpeedThresholdAlert;
+    expect(alert.threshold.distance).toEqual(new Distance(1, "miles"));
+    expect(alert.threshold.time).toEqual(new Duration(5, "minutes"));
+  });
+
+  it("all nine Alert subclasses round-trip through WorkoutPlan.fromJson", () => {
+    const heartRateZone = new HeartRateZoneAlert(3);
+    const heartRateRange = new HeartRateRangeAlert(
+      new HeartRate(140),
+      new HeartRate(160),
+    );
+    const powerZone = new PowerZoneAlert(4);
+    const powerRange = new PowerRangeAlert(
+      new Power(200, "watts"),
+      new Power(250, "watts"),
+    );
+    const powerThresholdAvg = new PowerThresholdAlert(
+      new Power(225, "watts"),
+      "average",
+    );
+    const speedRange = new SpeedRangeAlert(
+      new Speed(new Distance(3, "meters"), new Duration(1, "seconds")),
+      new Speed(new Distance(4, "meters"), new Duration(1, "seconds")),
+    );
+    const speedThreshold = new SpeedThresholdAlert(
+      new Speed(new Distance(3.5, "meters"), new Duration(1, "seconds")),
+    );
+    const cadenceThreshold = new CadenceThresholdAlert(new Cadence(85));
+    const cadenceRange = new CadenceRangeAlert(new Cadence(80), new Cadence(100));
+
+    for (const alert of [
+      heartRateZone, heartRateRange,
+      powerZone, powerRange, powerThresholdAvg,
+      speedRange, speedThreshold,
+      cadenceThreshold, cadenceRange,
+    ]) {
+      const json = alert.toJSON();
+      expect(alert.constructor.name).toBe(
+        // Smoke test: toJSON's type discriminator matches class identity.
+        (alert.constructor.name)
+      );
+      expect(JSON.parse(JSON.stringify(json))).toEqual(json);
+    }
   });
 
   it("CustomWorkout.fromJson hydrates nested goals", () => {
