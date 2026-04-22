@@ -1,6 +1,6 @@
 {
   "name": "@bibixx/workoutkit",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "TypeScript SDK for reading and writing Apple's .workout file format (WorkoutKit).",
   "keywords": [
     "apple",
