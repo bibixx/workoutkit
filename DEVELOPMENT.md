@@ -151,6 +151,36 @@ Value types: `DistanceValue`, `TimeValue`, `EnergyValue`, `PowerValue`,
 
 Range types: `CadenceRange`, `HeartRateRange`, `PowerRange`, `SpeedRange`.
 
+### WorkoutAlert
+
+`WorkoutStep.alert` (field 2) carries a singular `apple.workout.WorkoutAlert`
+despite the proto having four per-metric sub-fields. The outer envelope
+encodes the metric axis + shape via two enums:
+
+```
+WorkoutAlert
+├── 1 targetType   enum AlertTargetType  (CURRENT/AVERAGE × HR/POWER/SPEED/CADENCE)
+├── 2 targetKind   enum AlertTargetKind  (VALUE | RANGE | ZONE)
+├── 4 speedAlert     SpeedAlert
+├── 5 cadenceAlert   CadenceAlert
+├── 6 powerAlert     PowerAlert
+└── 7 heartRateAlert HeartRateAlert
+```
+
+`SpeedValue` serializes as `{distance, time}`, and `CadenceValue` as
+`{count: uint32, duration: TimeValue}` — which is why the SDK models
+speed as a pair (covering pace semantics without a second class) and
+cadence as `countPerMinute` with a fixed 1-minute duration anchor.
+
+Full wire-format findings live in [`artifacts/alerts-wire-format.md`](artifacts/alerts-wire-format.md).
+
+Activity/alert compatibility (e.g. power alerts on walking,  cadence on
+swimming) is enforced at Swift `CustomWorkout.init` time — Apple's
+`WorkoutPlan(from: Data)` parser is permissive. The SDK doesn't
+duplicate that validation; if you hand-build an unusual combination,
+it will serialize and decode fine, but the Apple Watch / iPhone app
+may refuse to import it.
+
 ## Schema drift
 
 Apple will evolve this format (the `majorVersion` / `minorVersion` /

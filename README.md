@@ -45,6 +45,7 @@
         <li><a href="#decode-a-workout-file">Decode a .workout file</a></li>
         <li><a href="#workout-variants">Workout variants</a></li>
         <li><a href="#goals">Goals</a></li>
+        <li><a href="#alerts">Alerts</a></li>
         <li><a href="#json-interop">JSON interop</a></li>
         <li><a href="#platform-recipes">Platform recipes</a></li>
       </ul>
@@ -217,6 +218,74 @@ Supported units:
 * `LengthUnit`: `meters`, `kilometers`, `feet`, `yards`, `miles`
 * `DurationUnit`: `seconds`, `minutes`, `hours`
 * `EnergyUnit`: `kilocalories`, `kilojoules`
+
+### Alerts
+
+Steps inside a `CustomWorkout` can carry an optional `Alert`, mirroring
+WorkoutKit's `WorkoutAlert` hierarchy. Nine concrete subclasses cover every
+alert shape Apple ships — zone, range, and threshold variants across heart
+rate, power, speed, and cadence.
+
+```ts
+import {
+  Cadence, HeartRate, Power, Speed, Distance, Duration,
+  HeartRateZoneAlert, HeartRateRangeAlert,
+  PowerZoneAlert, PowerRangeAlert, PowerThresholdAlert,
+  SpeedRangeAlert, SpeedThresholdAlert,
+  CadenceThresholdAlert, CadenceRangeAlert,
+} from "@bibixx/workoutkit";
+
+const block = custom.addBlock(4);
+
+// Heart-rate zone alert on a work interval.
+block.addStep(
+  "work",
+  new TimeGoal(new Duration(3, "minutes")),
+  /* displayName */ undefined,
+  new HeartRateZoneAlert(3),
+);
+
+// Power range with the average metric (vs. default "current").
+block.addStep(
+  "work",
+  new TimeGoal(new Duration(20, "minutes")),
+  undefined,
+  new PowerRangeAlert(new Power(200, "watts"), new Power(250, "watts"), "average"),
+);
+
+// Pace — SpeedThresholdAlert with a (distance, time) pair other than
+// "<X> per 1 second". 5:00/mile below; the SDK preserves the pair shape.
+block.addStep(
+  "work",
+  new OpenGoal(),
+  undefined,
+  new SpeedThresholdAlert(
+    new Speed(new Distance(1, "miles"), new Duration(5, "minutes")),
+  ),
+);
+```
+
+Heart-rate and cadence alerts always use the "current" metric on Apple's
+API surface, so `HeartRateZoneAlert`, `HeartRateRangeAlert`,
+`CadenceThresholdAlert`, and `CadenceRangeAlert` don't take a metric
+parameter. Power and speed accept `"current"` (default) or `"average"`.
+Speed always rides on a `{distance, time}` pair; that shape covers both
+speed (3.5 m per 1 s) and pace (1 mile per 5 min) without lossy
+conversion.
+
+Alert subtypes:
+
+| Class                   | Target shape                              | Metric    |
+|-------------------------|-------------------------------------------|-----------|
+| `HeartRateZoneAlert`    | `zone: number`                            | current   |
+| `HeartRateRangeAlert`   | `HeartRate` min + max                     | current   |
+| `PowerZoneAlert`        | `zone: number`                            | current   |
+| `PowerRangeAlert`       | `Power` min + max                         | current / average |
+| `PowerThresholdAlert`   | `Power` threshold                         | current / average |
+| `SpeedRangeAlert`       | `Speed` min + max                         | current / average |
+| `SpeedThresholdAlert`   | `Speed` threshold                         | current / average |
+| `CadenceThresholdAlert` | `Cadence` threshold                       | current   |
+| `CadenceRangeAlert`     | `Cadence` min + max                       | current   |
 
 ### JSON interop
 
