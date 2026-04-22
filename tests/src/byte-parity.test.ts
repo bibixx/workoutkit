@@ -21,13 +21,9 @@ describe("determinism canary", () => {
   it("custom-pool-swim.spec.json → stable bytes", () => {
     const spec = loadSpec(join(fixtureDir, "custom-pool-swim.spec.json"));
     const actual = encode(spec);
-    const expected = new Uint8Array(
-      readFileSync(join(snapshotDir, "custom-pool-swim.workout")),
-    );
+    const expected = new Uint8Array(readFileSync(join(snapshotDir, "custom-pool-swim.workout")));
 
-    const equal =
-      actual.length === expected.length &&
-      actual.every((b, i) => b === expected[i]);
+    const equal = actual.length === expected.length && actual.every((b, i) => b === expected[i]);
 
     if (!equal) {
       throw new Error(

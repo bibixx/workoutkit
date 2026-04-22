@@ -35,9 +35,7 @@ describe("decode tolerates Apple-produced bytes (parser via real files)", () => 
   // Only custom-pool-swim has a pinned snapshot; exercise it.
   it("custom-pool-swim.workout", async () => {
     const { readFile } = await import("node:fs/promises");
-    const bytes = new Uint8Array(
-      await readFile(join(snapshotDir, "custom-pool-swim.workout")),
-    );
+    const bytes = new Uint8Array(await readFile(join(snapshotDir, "custom-pool-swim.workout")));
     const decoded = decode(bytes);
     const expected = loadSpec(join(fixturesDir, "custom-pool-swim.spec.json"));
     expect(normalize(decoded.toJSON())).toEqual(normalize(expected));

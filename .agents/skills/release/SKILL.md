@@ -9,15 +9,23 @@ allowed-tools:
 
 # Release @bibixx/workoutkit
 
-End-to-end release: pre-flight → typecheck → test → build → publish → tag →
+End-to-end release: pre-flight → pack preview → bump → publish → tag →
 GitHub release. **Publish happens before tag+push**, so a failed publish
 never leaves an orphan tag pointing at a version that isn't on npm.
 
+Lint, format, typecheck, test, and build all run **automatically** on
+`npm publish` via `sdk/package.json`'s `prepublishOnly` script, which
+delegates to `lefthook run prepublish` (see [`lefthook.yml`](../../../lefthook.yml)).
+A failing check aborts the publish — no special pre-step needed in this
+skill.
+
 ## Non-negotiables
 
-- Never `npm publish` before `typecheck`, `test`, and `build` all succeed.
 - Never push a tag before `npm publish` succeeds.
 - Never use `--force` and never skip git hooks.
+- Never run `npm publish` from the agent — the account has WebAuthn 2FA
+  (YubiKey) and the prompt needs a TTY the agent doesn't have. Hand the
+  command to the user at step 6.
 - If publish succeeds but `git push` fails, surface both the published
   version and the push error clearly — the user has to resolve manually.
 
@@ -61,19 +69,15 @@ git log --pretty=format:'- %s (%h)'
 Show the generated notes to the user and capture the approved body as
 `$NOTES`. The user may edit before approving.
 
-### 4. Checks & build
-
-Run from the repo root. All must pass:
+### 4. Pack preview
 
 ```bash
-npm run typecheck          # tsc --noEmit against sdk/src
-npm test                   # Vitest — 154+ tests against sdk/src
-npm run build:sdk          # tsup → sdk/dist/
 npm pack --dry-run -w @bibixx/workoutkit
 ```
 
-Show the `npm pack --dry-run` file list to the user for final review —
-catches anything accidentally shipped or missing.
+Show the file list to the user for final review — catches anything
+accidentally shipped or missing. (Checks + build run automatically in
+step 6 via `prepublishOnly`; no need to run them here.)
 
 ### 5. Bump version & commit
 
@@ -86,15 +90,23 @@ git commit -m "Release @bibixx/workoutkit vNEW"
 `--no-git-tag-version` matters: we control tagging ourselves (step 7) so
 publish can happen first.
 
-### 6. Publish to npm
+### 6. Publish to npm — **user runs this, not the agent**
 
 ```bash
 npm publish -w @bibixx/workoutkit
 ```
 
-Uses `publishConfig.access: "public"` from `sdk/package.json`. The `prepack`
-script copies `README.md` + `LICENSE` into `sdk/`; `postpack` cleans them
-back up so `git status` stays clean.
+The account has WebAuthn 2FA (YubiKey). The tap prompt needs a real TTY,
+which the agent's non-interactive shell can't provide. **Stop here, hand
+off the exact command above, and wait for the user to confirm it
+succeeded** (e.g. `npm view @bibixx/workoutkit version` now prints the
+new version). Then resume at step 7.
+
+Uses `publishConfig.access: "public"` from `sdk/package.json`.
+`prepublishOnly` runs `lefthook run prepublish` (lint / fmt / typecheck /
+test, in parallel) then `tsup` before the upload — a failure here aborts
+publish cleanly. The `prepack` script copies `README.md` + `LICENSE` into
+`sdk/`; `postpack` cleans them back up so `git status` stays clean.
 
 **On failure:** do NOT push commit or tag. Surface the error and stop.
 

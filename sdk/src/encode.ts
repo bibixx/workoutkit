@@ -167,15 +167,11 @@ const POWER_UNIT_PROTO: Record<PowerUnit, number> = {
 };
 
 function powerTargetType(metric: AlertMetric | undefined): number {
-  return metric === "average"
-    ? ALERT_TARGET_TYPE.averagePower
-    : ALERT_TARGET_TYPE.currentPower;
+  return metric === "average" ? ALERT_TARGET_TYPE.averagePower : ALERT_TARGET_TYPE.currentPower;
 }
 
 function speedTargetType(metric: AlertMetric | undefined): number {
-  return metric === "average"
-    ? ALERT_TARGET_TYPE.averageSpeed
-    : ALERT_TARGET_TYPE.currentSpeed;
+  return metric === "average" ? ALERT_TARGET_TYPE.averageSpeed : ALERT_TARGET_TYPE.currentSpeed;
 }
 
 // PowerValue is the standard {unit, value} Quantity shape.
@@ -354,23 +350,23 @@ function writeSwimBikeRunWorkout(w: Writer, s: SwimBikeRunWorkoutJson): void {
 }
 
 export function encodeWorkoutPlan(plan: WorkoutPlanJson): Uint8Array {
-  const present = [plan.custom, plan.goal, plan.pacer, plan.swimBikeRun]
-    .filter((v) => v !== undefined).length;
+  const present = [plan.custom, plan.goal, plan.pacer, plan.swimBikeRun].filter(
+    (v) => v !== undefined,
+  ).length;
   if (present === 0) {
     throw new Error("WorkoutPlan must contain one of: custom | goal | pacer | swimBikeRun");
   }
   if (present > 1) {
-    throw new Error(
-      "WorkoutPlan must contain exactly one of: custom | goal | pacer | swimBikeRun",
-    );
+    throw new Error("WorkoutPlan must contain exactly one of: custom | goal | pacer | swimBikeRun");
   }
 
   const w = new Writer();
   w.string(9, plan.referenceId);
-  if (plan.custom)      w.message(PLAN_FIELD.custom,      (sub) => writeCustomWorkout(sub, plan.custom!));
-  if (plan.goal)        w.message(PLAN_FIELD.goal,        (sub) => writeSingleGoalWorkout(sub, plan.goal!));
-  if (plan.pacer)       w.message(PLAN_FIELD.pacer,       (sub) => writePacerWorkout(sub, plan.pacer!));
-  if (plan.swimBikeRun) w.message(PLAN_FIELD.swimBikeRun, (sub) => writeSwimBikeRunWorkout(sub, plan.swimBikeRun!));
+  if (plan.custom) w.message(PLAN_FIELD.custom, (sub) => writeCustomWorkout(sub, plan.custom!));
+  if (plan.goal) w.message(PLAN_FIELD.goal, (sub) => writeSingleGoalWorkout(sub, plan.goal!));
+  if (plan.pacer) w.message(PLAN_FIELD.pacer, (sub) => writePacerWorkout(sub, plan.pacer!));
+  if (plan.swimBikeRun)
+    w.message(PLAN_FIELD.swimBikeRun, (sub) => writeSwimBikeRunWorkout(sub, plan.swimBikeRun!));
 
   // Version trailers. Pinned from Apple's output.
   w.uint32Required(1000, 1); // majorVersion

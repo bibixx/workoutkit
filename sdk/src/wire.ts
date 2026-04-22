@@ -4,7 +4,7 @@
 const WIRE_VARINT = 0;
 const WIRE_I64 = 1;
 const WIRE_LEN = 2;
-const WIRE_I32 = 5;
+const _WIRE_I32 = 5;
 
 export class Writer {
   private chunks: Uint8Array[] = [];

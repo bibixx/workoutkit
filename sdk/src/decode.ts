@@ -76,11 +76,7 @@ class Reader {
     if (this.off + 8 > this.bytes.length) {
       throw new Error("double: unexpected end of buffer");
     }
-    const view = new DataView(
-      this.bytes.buffer,
-      this.bytes.byteOffset + this.off,
-      8,
-    );
+    const view = new DataView(this.bytes.buffer, this.bytes.byteOffset + this.off, 8);
     this.off += 8;
     return view.getFloat64(0, true);
   }
@@ -231,7 +227,8 @@ function readGoal(r: Reader): GoalJson {
       while (!sub.eof()) {
         const tag = sub.tag();
         if (tag.field === 1 && tag.wire === WIRE_LEN) d = readLengthQuantity(sub.subReader());
-        else if (tag.field === 2 && tag.wire === WIRE_LEN) t = readDurationQuantity(sub.subReader());
+        else if (tag.field === 2 && tag.wire === WIRE_LEN)
+          t = readDurationQuantity(sub.subReader());
         else sub.skip(tag.wire);
       }
       if (!d || !t) throw new Error("poolSwimDistanceWithTime: missing distance or time");
@@ -344,9 +341,12 @@ function readCadenceValue(r: Reader): Quantity<CadenceUnit> {
 
 function toSeconds(d: Q<DurationUnit>): number {
   switch (d.unit) {
-    case "seconds": return d.value;
-    case "minutes": return d.value * 60;
-    case "hours":   return d.value * 3600;
+    case "seconds":
+      return d.value;
+    case "minutes":
+      return d.value * 60;
+    case "hours":
+      return d.value * 3600;
   }
 }
 
@@ -360,11 +360,7 @@ function zoneValue(r: Reader): number {
   return zone;
 }
 
-function readHeartRateAlert(
-  r: Reader,
-  targetKind: number,
-  targetType: number,
-): AlertJson {
+function readHeartRateAlert(r: Reader, targetKind: number, targetType: number): AlertJson {
   let zone: number | undefined;
   let rangeMin: Quantity<HeartRateUnit> | undefined;
   let rangeMax: Quantity<HeartRateUnit> | undefined;
@@ -377,8 +373,10 @@ function readHeartRateAlert(
       const sub = r.subReader();
       while (!sub.eof()) {
         const tag = sub.tag();
-        if (tag.field === 1 && tag.wire === WIRE_LEN) rangeMin = readHeartRateValue(sub.subReader());
-        else if (tag.field === 2 && tag.wire === WIRE_LEN) rangeMax = readHeartRateValue(sub.subReader());
+        if (tag.field === 1 && tag.wire === WIRE_LEN)
+          rangeMin = readHeartRateValue(sub.subReader());
+        else if (tag.field === 2 && tag.wire === WIRE_LEN)
+          rangeMax = readHeartRateValue(sub.subReader());
         else sub.skip(tag.wire);
       }
     } else {
@@ -392,14 +390,12 @@ function readHeartRateAlert(
   if (targetKind === ALERT_TARGET_KIND.range && rangeMin && rangeMax) {
     return { type: "heartRateRange", min: rangeMin, max: rangeMax };
   }
-  throw new Error(`heartRateAlert: unsupported target combination (kind=${targetKind}, type=${targetType})`);
+  throw new Error(
+    `heartRateAlert: unsupported target combination (kind=${targetKind}, type=${targetType})`,
+  );
 }
 
-function readPowerAlert(
-  r: Reader,
-  targetKind: number,
-  targetType: number,
-): AlertJson {
+function readPowerAlert(r: Reader, targetKind: number, targetType: number): AlertJson {
   let threshold: Quantity<PowerUnit> | undefined;
   let rangeMin: Quantity<PowerUnit> | undefined;
   let rangeMax: Quantity<PowerUnit> | undefined;
@@ -414,7 +410,8 @@ function readPowerAlert(
       while (!sub.eof()) {
         const tag = sub.tag();
         if (tag.field === 1 && tag.wire === WIRE_LEN) rangeMin = readPowerValue(sub.subReader());
-        else if (tag.field === 2 && tag.wire === WIRE_LEN) rangeMax = readPowerValue(sub.subReader());
+        else if (tag.field === 2 && tag.wire === WIRE_LEN)
+          rangeMax = readPowerValue(sub.subReader());
         else sub.skip(tag.wire);
       }
     } else if (field === 3 && wire === WIRE_LEN) {
@@ -447,14 +444,12 @@ function readPowerAlert(
     if (metric) out.metric = metric;
     return out;
   }
-  throw new Error(`powerAlert: unsupported target combination (kind=${targetKind}, type=${targetType})`);
+  throw new Error(
+    `powerAlert: unsupported target combination (kind=${targetKind}, type=${targetType})`,
+  );
 }
 
-function readSpeedAlert(
-  r: Reader,
-  targetKind: number,
-  targetType: number,
-): AlertJson {
+function readSpeedAlert(r: Reader, targetKind: number, targetType: number): AlertJson {
   let threshold: SpeedJson | undefined;
   let rangeMin: SpeedJson | undefined;
   let rangeMax: SpeedJson | undefined;
@@ -468,7 +463,8 @@ function readSpeedAlert(
       while (!sub.eof()) {
         const tag = sub.tag();
         if (tag.field === 1 && tag.wire === WIRE_LEN) rangeMin = readSpeedValue(sub.subReader());
-        else if (tag.field === 2 && tag.wire === WIRE_LEN) rangeMax = readSpeedValue(sub.subReader());
+        else if (tag.field === 2 && tag.wire === WIRE_LEN)
+          rangeMax = readSpeedValue(sub.subReader());
         else sub.skip(tag.wire);
       }
     } else {
@@ -496,14 +492,12 @@ function readSpeedAlert(
     if (metric) out.metric = metric;
     return out;
   }
-  throw new Error(`speedAlert: unsupported target combination (kind=${targetKind}, type=${targetType})`);
+  throw new Error(
+    `speedAlert: unsupported target combination (kind=${targetKind}, type=${targetType})`,
+  );
 }
 
-function readCadenceAlert(
-  r: Reader,
-  targetKind: number,
-  targetType: number,
-): AlertJson {
+function readCadenceAlert(r: Reader, targetKind: number, targetType: number): AlertJson {
   let threshold: Quantity<CadenceUnit> | undefined;
   let rangeMin: Quantity<CadenceUnit> | undefined;
   let rangeMax: Quantity<CadenceUnit> | undefined;
@@ -517,7 +511,8 @@ function readCadenceAlert(
       while (!sub.eof()) {
         const tag = sub.tag();
         if (tag.field === 1 && tag.wire === WIRE_LEN) rangeMin = readCadenceValue(sub.subReader());
-        else if (tag.field === 2 && tag.wire === WIRE_LEN) rangeMax = readCadenceValue(sub.subReader());
+        else if (tag.field === 2 && tag.wire === WIRE_LEN)
+          rangeMax = readCadenceValue(sub.subReader());
         else sub.skip(tag.wire);
       }
     } else {
@@ -531,7 +526,9 @@ function readCadenceAlert(
   if (targetKind === ALERT_TARGET_KIND.value && threshold) {
     return { type: "cadenceThreshold", threshold };
   }
-  throw new Error(`cadenceAlert: unsupported target combination (kind=${targetKind}, type=${targetType})`);
+  throw new Error(
+    `cadenceAlert: unsupported target combination (kind=${targetKind}, type=${targetType})`,
+  );
 }
 
 function readAlert(r: Reader): AlertJson {
@@ -554,9 +551,9 @@ function readAlert(r: Reader): AlertJson {
   }
 
   if (heartRateSub) return readHeartRateAlert(new Reader(heartRateSub), targetKind, targetType);
-  if (powerSub)     return readPowerAlert(new Reader(powerSub), targetKind, targetType);
-  if (speedSub)     return readSpeedAlert(new Reader(speedSub), targetKind, targetType);
-  if (cadenceSub)   return readCadenceAlert(new Reader(cadenceSub), targetKind, targetType);
+  if (powerSub) return readPowerAlert(new Reader(powerSub), targetKind, targetType);
+  if (speedSub) return readSpeedAlert(new Reader(speedSub), targetKind, targetType);
+  if (cadenceSub) return readCadenceAlert(new Reader(cadenceSub), targetKind, targetType);
 
   throw new Error("alert: no per-metric sub-message set");
 }

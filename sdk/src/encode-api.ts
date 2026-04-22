@@ -8,9 +8,7 @@ function toJson(plan: EncodeInput): WorkoutPlanJson {
   // Duck-type detection keeps this subpath free of a runtime dep on the
   // class module — browser bundles that import only `/encode` stay lean.
   const candidate = plan as { toJSON?: () => WorkoutPlanJson };
-  return typeof candidate.toJSON === "function"
-    ? candidate.toJSON()
-    : (plan as WorkoutPlanJson);
+  return typeof candidate.toJSON === "function" ? candidate.toJSON() : (plan as WorkoutPlanJson);
 }
 
 export function encode(plan: EncodeInput): Uint8Array {

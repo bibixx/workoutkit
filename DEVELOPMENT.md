@@ -1,6 +1,6 @@
 # Development
 
-Internal docs for hacking on `@bibixx/workoutkit`. If you just want to *use*
+Internal docs for hacking on `@bibixx/workoutkit`. If you just want to _use_
 the SDK, read [`README.md`](README.md) instead.
 
 ## Repo layout
@@ -87,6 +87,7 @@ isn't on npm — publish happens before tag+push.
 ```
 
 This:
+
 - Enumerates exported Swift symbols via `dyld_info -exports`, demangles them.
 - Compiles `tools/workoutkit-section-dumper`, then dumps `__TEXT,__cstring`,
   `__TEXT,__swift5_reflstr`, and `__TEXT,__swift5_types` from an in-process
@@ -99,7 +100,7 @@ This:
 The key outputs are `artifacts/proto-messages.txt` and `artifacts/cstring.txt`
 — together they give us every proto message name, every field name, and every
 enum value Apple ships. `artifacts/swift5reflstr.txt` gives Swift storage-class
-field *order*, which maps 1:1 to proto field numbers.
+field _order_, which maps 1:1 to proto field numbers.
 
 > Requires Xcode Command Line Tools. Works on modern macOS where the framework
 > binary is inside the dyld shared cache — we never extract the whole cache
@@ -174,7 +175,7 @@ cadence as `countPerMinute` with a fixed 1-minute duration anchor.
 
 Full wire-format findings live in [`artifacts/alerts-wire-format.md`](artifacts/alerts-wire-format.md).
 
-Activity/alert compatibility (e.g. power alerts on walking,  cadence on
+Activity/alert compatibility (e.g. power alerts on walking, cadence on
 swimming) is enforced at Swift `CustomWorkout.init` time — Apple's
 `WorkoutPlan(from: Data)` parser is permissive. The SDK doesn't
 duplicate that validation; if you hand-build an unusual combination,

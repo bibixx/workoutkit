@@ -32,13 +32,11 @@ const fixtures = readdirSync(rejectedDir)
 describe("Apple parser rejects known-invalid fixtures", () => {
   for (const name of fixtures) {
     it(name, () => {
-      const spec = JSON.parse(
-        readFileSync(join(rejectedDir, name), "utf8"),
-      ) as RejectedSpec;
+      const spec = JSON.parse(readFileSync(join(rejectedDir, name), "utf8")) as RejectedSpec;
 
       // The SDK should encode without objection — our encoder is a dumb
       // serializer, not a validator.
-      const bytes = encode(spec as Parameters<typeof encode>[0]);
+      const bytes = encode(spec as unknown as Parameters<typeof encode>[0]);
       expect(bytes.length).toBeGreaterThan(0);
 
       // Apple's parser must refuse the bytes. We capture the thrown error

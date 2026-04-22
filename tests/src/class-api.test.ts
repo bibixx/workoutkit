@@ -116,10 +116,7 @@ describe("hand-constructed classes (no fixtures)", () => {
     const block = c.addBlock(4);
     block.addStep(
       "work",
-      new PoolSwimDistanceWithTimeGoal(
-        new Distance(100, "meters"),
-        new Duration(2, "minutes"),
-      ),
+      new PoolSwimDistanceWithTimeGoal(new Distance(100, "meters"), new Duration(2, "minutes")),
     );
     const bytes = encode(plan);
     const parsed = swiftParse(bytes);
@@ -178,7 +175,9 @@ describe("hand-constructed classes (no fixtures)", () => {
       location: "outdoor",
       goal: new OpenGoal(),
     });
-    plan.asCustom({ activity: "cycling", location: "indoor" }).addBlock(1)
+    plan
+      .asCustom({ activity: "cycling", location: "indoor" })
+      .addBlock(1)
       .addStep("work", new DistanceGoal(new Distance(5, "kilometers")));
     expect(plan.goal).toBeUndefined();
     expect(plan.custom).toBeDefined();
@@ -251,9 +250,7 @@ describe("hand-constructed classes (no fixtures)", () => {
       "work",
       new OpenGoal(),
       undefined,
-      new SpeedThresholdAlert(
-        new Speed(new Distance(1, "miles"), new Duration(5, "minutes")),
-      ),
+      new SpeedThresholdAlert(new Speed(new Distance(1, "miles"), new Duration(5, "minutes"))),
     );
 
     const bytes = encode(plan);
@@ -267,19 +264,10 @@ describe("hand-constructed classes (no fixtures)", () => {
 
   it("all nine Alert subclasses round-trip through WorkoutPlan.fromJson", () => {
     const heartRateZone = new HeartRateZoneAlert(3);
-    const heartRateRange = new HeartRateRangeAlert(
-      new HeartRate(140),
-      new HeartRate(160),
-    );
+    const heartRateRange = new HeartRateRangeAlert(new HeartRate(140), new HeartRate(160));
     const powerZone = new PowerZoneAlert(4);
-    const powerRange = new PowerRangeAlert(
-      new Power(200, "watts"),
-      new Power(250, "watts"),
-    );
-    const powerThresholdAvg = new PowerThresholdAlert(
-      new Power(225, "watts"),
-      "average",
-    );
+    const powerRange = new PowerRangeAlert(new Power(200, "watts"), new Power(250, "watts"));
+    const powerThresholdAvg = new PowerThresholdAlert(new Power(225, "watts"), "average");
     const speedRange = new SpeedRangeAlert(
       new Speed(new Distance(3, "meters"), new Duration(1, "seconds")),
       new Speed(new Distance(4, "meters"), new Duration(1, "seconds")),
@@ -291,15 +279,20 @@ describe("hand-constructed classes (no fixtures)", () => {
     const cadenceRange = new CadenceRangeAlert(new Cadence(80), new Cadence(100));
 
     for (const alert of [
-      heartRateZone, heartRateRange,
-      powerZone, powerRange, powerThresholdAvg,
-      speedRange, speedThreshold,
-      cadenceThreshold, cadenceRange,
+      heartRateZone,
+      heartRateRange,
+      powerZone,
+      powerRange,
+      powerThresholdAvg,
+      speedRange,
+      speedThreshold,
+      cadenceThreshold,
+      cadenceRange,
     ]) {
       const json = alert.toJSON();
       expect(alert.constructor.name).toBe(
         // Smoke test: toJSON's type discriminator matches class identity.
-        (alert.constructor.name)
+        alert.constructor.name,
       );
       expect(JSON.parse(JSON.stringify(json))).toEqual(json);
     }

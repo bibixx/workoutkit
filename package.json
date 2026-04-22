@@ -1,16 +1,26 @@
 {
   "name": "workout-file-sdk-root",
   "private": true,
-  "type": "module",
   "workspaces": [
     "sdk",
     "tests"
   ],
+  "type": "module",
   "scripts": {
     "build:corpus": "swift build --package-path corpus -c release",
     "build:sdk": "npm -w @bibixx/workoutkit run build",
-    "typecheck": "npm -w @bibixx/workoutkit run typecheck",
+    "typecheck": "npm -w @bibixx/workoutkit run typecheck && npm -w tests run typecheck",
     "extract": "scripts/extract-workoutkit.sh",
-    "test": "npm -w tests run test"
+    "test": "npm -w tests run test",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "prepare": "lefthook install"
+  },
+  "devDependencies": {
+    "lefthook": "2.1.6",
+    "oxfmt": "0.46.0",
+    "oxlint": "1.61.0"
   }
 }

@@ -1,4 +1,5 @@
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+
 <a name="readme-top"></a>
 
 <div align="center">
@@ -20,8 +21,6 @@
     <a href="https://github.com/bibixx/workoutkit/issues">Request Feature</a>
   </p>
 </div>
-
-
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -61,9 +60,8 @@
   </ol>
 </details>
 
-
-
 <!-- ABOUT THE PROJECT -->
+
 ## About The Project
 
 `@bibixx/workoutkit` reads and writes the binary `.workout` files produced by Apple's Workout app on iOS 17+ and watchOS 10+. Those are the same bytes you get when you tap **Share Workout** on your Apple Watch or iPhone, or when a `WorkoutKit.WorkoutPlan` is encoded through `Transferable` for the share sheet.
@@ -71,26 +69,26 @@
 This is a pure file-format SDK. It doesn't talk to HealthKit, it doesn't read or write workout history, and it doesn't call any Apple APIs. You don't need an Apple Developer account to use it.
 
 What you do get:
-* A fluent TS class API (`WorkoutPlan`, `CustomWorkout`, `Goal`, ...) for building workouts in memory.
-* `encode(plan)` returning a `Uint8Array` of the exact bytes Apple's runtime produces.
-* `decode(bytes)` returning a structured `WorkoutPlan`.
-* JSON round-trip with `toJSON()` / `fromJson()` for storage and diffing.
-* Zero runtime dependencies. Runs in Node, Bun, Deno, and the browser.
+
+- A fluent TS class API (`WorkoutPlan`, `CustomWorkout`, `Goal`, ...) for building workouts in memory.
+- `encode(plan)` returning a `Uint8Array` of the exact bytes Apple's runtime produces.
+- `decode(bytes)` returning a structured `WorkoutPlan`.
+- JSON round-trip with `toJSON()` / `fromJson()` for storage and diffing.
+- Zero runtime dependencies. Runs in Node, Bun, Deno, and the browser.
 
 > This SDK is built by reverse engineering Apple's binary format. There's no public spec, so Apple can change the format whenever they want. See the [Compatibility section](#compatibility) for details.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- GETTING STARTED -->
+
 ## Getting Started
 
 ### Prerequisites
 
 | Name | Earliest tested version |
-|------|------------------------:|
-| Node | 18.0                    |
+| ---- | ----------------------: |
+| Node |                    18.0 |
 
 ### Installation
 
@@ -106,19 +104,14 @@ bun add @bibixx/workoutkit
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- USAGE EXAMPLES -->
+
 ## Usage
 
 ### Build a custom workout
 
 ```ts
-import {
-  WorkoutPlan, Step,
-  Distance, Duration,
-  DistanceGoal, TimeGoal,
-} from "@bibixx/workoutkit";
+import { WorkoutPlan, Step, Distance, Duration, DistanceGoal, TimeGoal } from "@bibixx/workoutkit";
 
 const plan = new WorkoutPlan({ referenceId: crypto.randomUUID() });
 
@@ -133,7 +126,7 @@ custom.warmup = new Step(new TimeGoal(new Duration(5, "minutes")));
 
 // 4× (1 km work + 2 min recovery)
 const block = custom.addBlock(4);
-block.addStep("work",     new DistanceGoal(new Distance(1, "kilometers")));
+block.addStep("work", new DistanceGoal(new Distance(1, "kilometers")));
 block.addStep("recovery", new TimeGoal(new Duration(2, "minutes")));
 
 // 5-minute cooldown
@@ -145,9 +138,9 @@ custom.cooldown = new Step(new TimeGoal(new Duration(5, "minutes")));
 ```ts
 import { encode, toBlob, toBase64 } from "@bibixx/workoutkit/encode";
 
-const bytes = encode(plan);   // Uint8Array with the exact .workout bytes
-const blob  = toBlob(plan);   // Blob, application/octet-stream
-const b64   = toBase64(plan); // base64 string
+const bytes = encode(plan); // Uint8Array with the exact .workout bytes
+const blob = toBlob(plan); // Blob, application/octet-stream
+const b64 = toBase64(plan); // base64 string
 ```
 
 ### Decode a .workout file
@@ -156,7 +149,7 @@ const b64   = toBase64(plan); // base64 string
 import { decode } from "@bibixx/workoutkit/decode";
 
 const bytes = new Uint8Array(await (await fetch("/shared.workout")).arrayBuffer());
-const plan  = decode(bytes);
+const plan = decode(bytes);
 
 console.log(plan.custom?.displayName);
 ```
@@ -183,15 +176,16 @@ plan.asPacer({
   activity: "running",
   location: "outdoor",
   distance: new Distance(5, "kilometers"),
-  time:     new Duration(25, "minutes"),
+  time: new Duration(25, "minutes"),
 });
 
 // 4. SwimBikeRun: triathlon and brick workouts, any sequence of legs.
 //    (Import SwimmingActivity / CyclingActivity / RunningActivity from the root.)
-plan.asSwimBikeRun({ displayName: "Sprint tri" })
-    .add(new SwimmingActivity({ swimmingLocation: "openWater" }))
-    .add(new CyclingActivity({ location: "outdoor" }))
-    .add(new RunningActivity({ location: "outdoor" }));
+plan
+  .asSwimBikeRun({ displayName: "Sprint tri" })
+  .add(new SwimmingActivity({ swimmingLocation: "openWater" }))
+  .add(new CyclingActivity({ location: "outdoor" }))
+  .add(new RunningActivity({ location: "outdoor" }));
 ```
 
 ### Goals
@@ -200,24 +194,28 @@ Goals attach to steps (`Step.goal`) and to `SingleGoalWorkout`. The quantities (
 
 ```ts
 import {
-  OpenGoal, TimeGoal, DistanceGoal, EnergyGoal, PoolSwimDistanceWithTimeGoal,
-  Distance, Duration, Energy,
+  OpenGoal,
+  TimeGoal,
+  DistanceGoal,
+  EnergyGoal,
+  PoolSwimDistanceWithTimeGoal,
+  Distance,
+  Duration,
+  Energy,
 } from "@bibixx/workoutkit";
 
-new OpenGoal();                                              // untimed
+new OpenGoal(); // untimed
 new TimeGoal(new Duration(30, "minutes"));
 new DistanceGoal(new Distance(10, "kilometers"));
 new EnergyGoal(new Energy(350, "kilocalories"));
-new PoolSwimDistanceWithTimeGoal(
-  new Distance(1500, "meters"),
-  new Duration(30,   "minutes"),
-);
+new PoolSwimDistanceWithTimeGoal(new Distance(1500, "meters"), new Duration(30, "minutes"));
 ```
 
 Supported units:
-* `LengthUnit`: `meters`, `kilometers`, `feet`, `yards`, `miles`
-* `DurationUnit`: `seconds`, `minutes`, `hours`
-* `EnergyUnit`: `kilocalories`, `kilojoules`
+
+- `LengthUnit`: `meters`, `kilometers`, `feet`, `yards`, `miles`
+- `DurationUnit`: `seconds`, `minutes`, `hours`
+- `EnergyUnit`: `kilocalories`, `kilojoules`
 
 ### Alerts
 
@@ -228,11 +226,21 @@ rate, power, speed, and cadence.
 
 ```ts
 import {
-  Cadence, HeartRate, Power, Speed, Distance, Duration,
-  HeartRateZoneAlert, HeartRateRangeAlert,
-  PowerZoneAlert, PowerRangeAlert, PowerThresholdAlert,
-  SpeedRangeAlert, SpeedThresholdAlert,
-  CadenceThresholdAlert, CadenceRangeAlert,
+  Cadence,
+  HeartRate,
+  Power,
+  Speed,
+  Distance,
+  Duration,
+  HeartRateZoneAlert,
+  HeartRateRangeAlert,
+  PowerZoneAlert,
+  PowerRangeAlert,
+  PowerThresholdAlert,
+  SpeedRangeAlert,
+  SpeedThresholdAlert,
+  CadenceThresholdAlert,
+  CadenceRangeAlert,
 } from "@bibixx/workoutkit";
 
 const block = custom.addBlock(4);
@@ -259,9 +267,7 @@ block.addStep(
   "work",
   new OpenGoal(),
   undefined,
-  new SpeedThresholdAlert(
-    new Speed(new Distance(1, "miles"), new Duration(5, "minutes")),
-  ),
+  new SpeedThresholdAlert(new Speed(new Distance(1, "miles"), new Duration(5, "minutes"))),
 );
 ```
 
@@ -275,17 +281,17 @@ conversion.
 
 Alert subtypes:
 
-| Class                   | Target shape                              | Metric    |
-|-------------------------|-------------------------------------------|-----------|
-| `HeartRateZoneAlert`    | `zone: number`                            | current   |
-| `HeartRateRangeAlert`   | `HeartRate` min + max                     | current   |
-| `PowerZoneAlert`        | `zone: number`                            | current   |
-| `PowerRangeAlert`       | `Power` min + max                         | current / average |
-| `PowerThresholdAlert`   | `Power` threshold                         | current / average |
-| `SpeedRangeAlert`       | `Speed` min + max                         | current / average |
-| `SpeedThresholdAlert`   | `Speed` threshold                         | current / average |
-| `CadenceThresholdAlert` | `Cadence` threshold                       | current   |
-| `CadenceRangeAlert`     | `Cadence` min + max                       | current   |
+| Class                   | Target shape          | Metric            |
+| ----------------------- | --------------------- | ----------------- |
+| `HeartRateZoneAlert`    | `zone: number`        | current           |
+| `HeartRateRangeAlert`   | `HeartRate` min + max | current           |
+| `PowerZoneAlert`        | `zone: number`        | current           |
+| `PowerRangeAlert`       | `Power` min + max     | current / average |
+| `PowerThresholdAlert`   | `Power` threshold     | current / average |
+| `SpeedRangeAlert`       | `Speed` min + max     | current / average |
+| `SpeedThresholdAlert`   | `Speed` threshold     | current / average |
+| `CadenceThresholdAlert` | `Cadence` threshold   | current           |
+| `CadenceRangeAlert`     | `Cadence` min + max   | current           |
 
 ### JSON interop
 
@@ -294,8 +300,8 @@ Every class round-trips through a stable JSON shape. This is useful for storage,
 ```ts
 import { WorkoutPlan } from "@bibixx/workoutkit";
 
-const json = plan.toJSON();                  // WorkoutPlanJson
-const copy = WorkoutPlan.fromJson(json);     // round-trips losslessly
+const json = plan.toJSON(); // WorkoutPlanJson
+const copy = WorkoutPlan.fromJson(json); // round-trips losslessly
 
 // encode() / toBlob() / toBase64() also accept a WorkoutPlanJson directly,
 // so you don't have to hydrate a class first.
@@ -382,35 +388,29 @@ const plan2 = decode(await Deno.readFile("./out.workout"));
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 ## API entries
 
 There are four subpath entries. Pick the smallest one you need, each one is independently tree-shakable.
 
-| Entry                        | Exports                                                            | Use case                                                        |
-|------------------------------|--------------------------------------------------------------------|-----------------------------------------------------------------|
-| `@bibixx/workoutkit`         | All classes + types (`WorkoutPlan`, `CustomWorkout`, `Goal`, ...)  | Build workouts in memory                                        |
-| `@bibixx/workoutkit/encode`  | `encode`, `toBlob`, `toBase64`                                     | Serialize to bytes. Browser / Node / Bun / Deno                 |
-| `@bibixx/workoutkit/decode`  | `decode`                                                           | Parse `.workout` bytes. Browser / Node / Bun / Deno             |
-| `@bibixx/workoutkit/fs`      | `saveWorkoutPlan`, `loadWorkoutPlan`                               | Convenience wrappers for local file IO. Node / Bun only (uses `node:fs/promises`) |
+| Entry                       | Exports                                                           | Use case                                                                          |
+| --------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `@bibixx/workoutkit`        | All classes + types (`WorkoutPlan`, `CustomWorkout`, `Goal`, ...) | Build workouts in memory                                                          |
+| `@bibixx/workoutkit/encode` | `encode`, `toBlob`, `toBase64`                                    | Serialize to bytes. Browser / Node / Bun / Deno                                   |
+| `@bibixx/workoutkit/decode` | `decode`                                                          | Parse `.workout` bytes. Browser / Node / Bun / Deno                               |
+| `@bibixx/workoutkit/fs`     | `saveWorkoutPlan`, `loadWorkoutPlan`                              | Convenience wrappers for local file IO. Node / Bun only (uses `node:fs/promises`) |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ## Runtime support
 
-| Runtime              | Supported | Notes                                                         |
-|----------------------|-----------|---------------------------------------------------------------|
-| Browsers (evergreen) | ✅         | Use `/encode` and `/decode`. `toBase64` uses `btoa`.          |
-| Node 18+             | ✅         | All four entries. Use `/fs` for local file IO.                |
-| Bun                  | ✅         | All four entries.                                             |
-| Deno                 | ✅         | Use `/encode` and `/decode`. `/fs` requires Node-compat.      |
+| Runtime              | Supported | Notes                                                    |
+| -------------------- | --------- | -------------------------------------------------------- |
+| Browsers (evergreen) | ✅        | Use `/encode` and `/decode`. `toBase64` uses `btoa`.     |
+| Node 18+             | ✅        | All four entries. Use `/fs` for local file IO.           |
+| Bun                  | ✅        | All four entries.                                        |
+| Deno                 | ✅        | Use `/encode` and `/decode`. `/fs` requires Node-compat. |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
 
 ## Compatibility
 
@@ -420,18 +420,16 @@ Current coverage: iOS 26 / watchOS 26 / macOS 26 (as of 2026-04). If Apple ships
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- ROADMAP -->
+
 ## Roadmap
 
 Upcoming features and known issues are tracked using [GitHub issues](https://github.com/bibixx/workoutkit/issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- CONTRIBUTING -->
+
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -449,18 +447,16 @@ For development setup, byte-extraction tooling and the test suite layout, see [`
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- LICENSE -->
+
 ## License
 
 Distributed under the MIT License. See [`LICENSE`](./LICENSE) for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- CONTACT -->
+
 ## Contact
 
 Bartek Legięć — [@bibix1999](https://twitter.com/bibix1999) — [legiec.io](https://legiec.io)
@@ -469,12 +465,11 @@ Project Link: [https://github.com/bibixx/workoutkit](https://github.com/bibixx/w
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-
-
 <!-- DISCLAIMER -->
+
 ## Disclaimer
 
-* This project is unofficial and is not associated in any way with Apple Inc. Apple, iOS, watchOS, WorkoutKit, HealthKit, Apple Watch, iPhone and related marks are trademarks of Apple Inc., registered in the U.S. and other countries.
-* This SDK implements Apple's `.workout` file format through reverse engineering and clean-room analysis of publicly shipping binaries. It doesn't distribute any Apple code, assets or private APIs.
+- This project is unofficial and is not associated in any way with Apple Inc. Apple, iOS, watchOS, WorkoutKit, HealthKit, Apple Watch, iPhone and related marks are trademarks of Apple Inc., registered in the U.S. and other countries.
+- This SDK implements Apple's `.workout` file format through reverse engineering and clean-room analysis of publicly shipping binaries. It doesn't distribute any Apple code, assets or private APIs.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

@@ -1,0 +1,39 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: lint
+      run: npx oxlint {staged_files}
+      glob: "*.{ts,tsx,js,jsx,mjs,cjs}"
+    - name: fmt
+      run: npx oxfmt --check {staged_files}
+      glob: "*.{ts,tsx,js,jsx,mjs,cjs,json,jsonc}"
+    - name: typecheck
+      run: npm run typecheck
+
+pre-push:
+  parallel: true
+  jobs:
+    - name: lint
+      run: npm run lint
+    - name: fmt
+      run: npm run fmt:check
+    - name: typecheck
+      run: npm run typecheck
+    - name: test
+      run: npm test
+
+# Invoked by sdk/package.json `prepublishOnly` — runs automatically on
+# `npm publish`. Not a git event, so it fires only when something actually
+# publishes. Kept here (not duplicated in package.json) so the checklist
+# stays in one place.
+prepublish:
+  parallel: true
+  jobs:
+    - name: lint
+      run: npm run lint
+    - name: fmt
+      run: npm run fmt:check
+    - name: typecheck
+      run: npm run typecheck
+    - name: test
+      run: npm test

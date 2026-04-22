@@ -1,0 +1,8 @@
+{
+  "$schema": "../node_modules/oxlint/configuration_schema.json",
+  "plugins": ["vitest"],
+  "rules": {
+    "jest/valid-title": "off",
+    "jest/no-conditional-expect": "off"
+  }
+}

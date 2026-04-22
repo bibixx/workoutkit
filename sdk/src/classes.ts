@@ -1,12 +1,4 @@
-import {
-  Cadence,
-  Distance,
-  Duration,
-  Energy,
-  HeartRate,
-  Power,
-  Speed,
-} from "./quantities.ts";
+import { Cadence, Distance, Duration, Energy, HeartRate, Power, Speed } from "./quantities.ts";
 import type {
   ActivityName,
   AlertJson,
@@ -84,7 +76,10 @@ export class EnergyGoal extends Goal {
 }
 
 export class PoolSwimDistanceWithTimeGoal extends Goal {
-  constructor(public distance: Distance, public time: Duration) {
+  constructor(
+    public distance: Distance,
+    public time: Duration,
+  ) {
     super();
   }
   toJSON(): GoalJson {
@@ -108,41 +103,21 @@ export abstract class Alert {
       case "heartRateZone":
         return new HeartRateZoneAlert(json.zone);
       case "heartRateRange":
-        return new HeartRateRangeAlert(
-          HeartRate.fromJson(json.min),
-          HeartRate.fromJson(json.max),
-        );
+        return new HeartRateRangeAlert(HeartRate.fromJson(json.min), HeartRate.fromJson(json.max));
       case "powerZone":
         return new PowerZoneAlert(json.zone);
       case "powerRange":
-        return new PowerRangeAlert(
-          Power.fromJson(json.min),
-          Power.fromJson(json.max),
-          json.metric,
-        );
+        return new PowerRangeAlert(Power.fromJson(json.min), Power.fromJson(json.max), json.metric);
       case "powerThreshold":
-        return new PowerThresholdAlert(
-          Power.fromJson(json.threshold),
-          json.metric,
-        );
+        return new PowerThresholdAlert(Power.fromJson(json.threshold), json.metric);
       case "speedRange":
-        return new SpeedRangeAlert(
-          Speed.fromJson(json.min),
-          Speed.fromJson(json.max),
-          json.metric,
-        );
+        return new SpeedRangeAlert(Speed.fromJson(json.min), Speed.fromJson(json.max), json.metric);
       case "speedThreshold":
-        return new SpeedThresholdAlert(
-          Speed.fromJson(json.threshold),
-          json.metric,
-        );
+        return new SpeedThresholdAlert(Speed.fromJson(json.threshold), json.metric);
       case "cadenceThreshold":
         return new CadenceThresholdAlert(Cadence.fromJson(json.threshold));
       case "cadenceRange":
-        return new CadenceRangeAlert(
-          Cadence.fromJson(json.min),
-          Cadence.fromJson(json.max),
-        );
+        return new CadenceRangeAlert(Cadence.fromJson(json.min), Cadence.fromJson(json.max));
     }
   }
 }
@@ -157,7 +132,10 @@ export class HeartRateZoneAlert extends Alert {
 }
 
 export class HeartRateRangeAlert extends Alert {
-  constructor(public min: HeartRate, public max: HeartRate) {
+  constructor(
+    public min: HeartRate,
+    public max: HeartRate,
+  ) {
     super();
   }
   toJSON(): AlertJson {
@@ -198,7 +176,10 @@ export class PowerRangeAlert extends Alert {
 }
 
 export class PowerThresholdAlert extends Alert {
-  constructor(public threshold: Power, public metric?: AlertMetric) {
+  constructor(
+    public threshold: Power,
+    public metric?: AlertMetric,
+  ) {
     super();
   }
   toJSON(): AlertJson {
@@ -231,7 +212,10 @@ export class SpeedRangeAlert extends Alert {
 }
 
 export class SpeedThresholdAlert extends Alert {
-  constructor(public threshold: Speed, public metric?: AlertMetric) {
+  constructor(
+    public threshold: Speed,
+    public metric?: AlertMetric,
+  ) {
     super();
   }
   toJSON(): AlertJson {
@@ -254,7 +238,10 @@ export class CadenceThresholdAlert extends Alert {
 }
 
 export class CadenceRangeAlert extends Alert {
-  constructor(public min: Cadence, public max: Cadence) {
+  constructor(
+    public min: Cadence,
+    public max: Cadence,
+  ) {
     super();
   }
   toJSON(): AlertJson {
@@ -321,12 +308,7 @@ export class IntervalBlock {
     this.iterations = iterations;
   }
 
-  addStep(
-    purpose: Purpose,
-    goal: Goal,
-    displayName?: string,
-    alert?: Alert,
-  ): IntervalStep {
+  addStep(purpose: Purpose, goal: Goal, displayName?: string, alert?: Alert): IntervalStep {
     const s = new IntervalStep(purpose, new Step(goal, displayName, alert));
     this.steps.push(s);
     return s;

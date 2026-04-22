@@ -23,12 +23,7 @@ export function semanticDiff(expected: Uint8Array, actual: Uint8Array): string {
   const ex = rawDecode(expected);
   const ac = rawDecode(actual);
   if (!ex || !ac) return "(raw proto decode failed)";
-  return [
-    "--- expected ---",
-    formatFields(ex),
-    "--- actual ---",
-    formatFields(ac),
-  ].join("\n");
+  return ["--- expected ---", formatFields(ex), "--- actual ---", formatFields(ac)].join("\n");
 }
 
 export function byteMismatchReport(expected: Uint8Array, actual: Uint8Array): string {

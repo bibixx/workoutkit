@@ -5,8 +5,8 @@
   "swimBikeRun": {
     "displayName": "Bike → Run → Swim",
     "activities": [
-      { "kind": "cycling",  "location": "outdoor" },
-      { "kind": "running",  "location": "outdoor" },
+      { "kind": "cycling", "location": "outdoor" },
+      { "kind": "running", "location": "outdoor" },
       { "kind": "swimming", "swimmingLocation": "openWater" }
     ]
   }

@@ -4,14 +4,16 @@
   "description": "TypeScript SDK for reading and writing Apple's .workout file format (WorkoutKit).",
   "keywords": [
     "apple",
-    "workoutkit",
-    "workout",
-    "healthkit",
     "fitness",
+    "healthkit",
     "ios",
+    "protobuf",
     "watchos",
-    "protobuf"
+    "workout",
+    "workoutkit"
   ],
+  "homepage": "https://github.com/bibixx/workoutkit#readme",
+  "bugs": "https://github.com/bibixx/workoutkit/issues",
   "license": "MIT",
   "author": "Bartosz Legięć",
   "repository": {
@@ -19,18 +21,13 @@
     "url": "git+https://github.com/bibixx/workoutkit.git",
     "directory": "sdk"
   },
-  "homepage": "https://github.com/bibixx/workoutkit#readme",
-  "bugs": "https://github.com/bibixx/workoutkit/issues",
-  "type": "module",
-  "sideEffects": false,
-  "engines": {
-    "node": ">=18"
-  },
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
+  "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -56,19 +53,22 @@
       "require": "./dist/fs.cjs"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "prepack": "cp ../README.md ./README.md && cp ../LICENSE ./LICENSE",
     "postpack": "rm -f ./README.md ./LICENSE",
-    "prepublishOnly": "tsup"
-  },
-  "publishConfig": {
-    "access": "public"
+    "prepublishOnly": "lefthook run prepublish && tsup"
   },
   "devDependencies": {
     "@types/node": "^20.12.0",
     "tsup": "^8.3.0",
     "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
